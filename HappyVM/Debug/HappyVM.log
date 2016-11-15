@@ -1,0 +1,8 @@
+﻿cl : Command line warning D9002: ignoring unknown option '-favor:INTEL64'
+  HappyVM.cpp
+z:\dev\happyvm\happyvm\harray.h(18): warning C4065: switch statement contains 'default' but no 'case' labels
+z:\dev\happyvm\happyvm\assembler.h(57): warning C4018: '<' : signed/unsigned mismatch
+z:\dev\happyvm\happyvm\happyvm.cpp(69): warning C4244: 'initializing' : conversion from 'time_t' to 'const long double', possible loss of data
+z:\dev\happyvm\happyvm\happyvm.cpp(108): warning C4244: 'initializing' : conversion from 'time_t' to 'const long double', possible loss of data
+z:\dev\happyvm\happyvm\happyvm.cpp(138): warning C4244: 'initializing' : conversion from 'time_t' to 'const long double', possible loss of data
+  HappyVM.vcxproj -> Z:\Dev\HappyVM\Debug\HappyVM.exe

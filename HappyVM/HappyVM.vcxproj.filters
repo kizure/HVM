@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\compiler">
+      <UniqueIdentifier>{06ce519f-eb6a-457d-a12b-19e3c02f8ce0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\compiler\operators">
+      <UniqueIdentifier>{11852798-3d70-49c7-9724-c19edaca3b4d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HInt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HFloat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="x64emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenizer.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="ast.h">
+      <Filter>Header Files\compiler</Filter>
+    </ClInclude>
+    <ClInclude Include="operator.h">
+      <Filter>Header Files\compiler\operators</Filter>
+    </ClInclude>
+    <ClInclude Include="HPointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vm_emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HappyVM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x64emitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
