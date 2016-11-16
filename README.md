@@ -71,7 +71,7 @@ The VM Emitter supports jump patching so labels can be used without knowing thei
 ### Long term:
 - Runtime optimization (aimed at JIT)
 - Make compatible with any endianness.
-- make into a JIT-interpreter hybrid compiler. (X64 based.)
+- make into a JIT-interpreter hybrid compiler. (X86 based.)
 - Make some sort of programming language so it can be used easily.
 - Implement the language slowly and build it up. for example start at 1+2
 
