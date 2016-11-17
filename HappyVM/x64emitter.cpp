@@ -426,7 +426,7 @@ bool X64Emitter::r64rm64(int reg, MEM_REF* regmem, INSTRUCTION* instr) {
 		}
 	}
 	else if (this->regNeedsSIB(regmem->reg) && regmem->is_mem) {
-		instr->MODRM |= 0x4; // 100 (SIB Byte)
+		//instr->MODRM |= 0x40; // 100 (SIB Byte)
 		reqSib = true;
 		if (regmem->scale == 1 && regmem->offset == 0) {
 			// SIB is only required with memory referencing
@@ -456,7 +456,7 @@ bool X64Emitter::r64rm64(int reg, MEM_REF* regmem, INSTRUCTION* instr) {
 	// Unless that register is being scaled or offsetted
 	// then it needs an SIB regardless, the base is 101
 
-	if (regmem->reg>=REG_R8 && regmem->is_mem==false) instr->REX |= 1; // R/M Field extension bit
+	if (regmem->reg>=REG_R8 && reqSib==false) instr->REX |= 1; // R/M Field extension bit
 	if (reg>=REG_R8) instr->REX |= (1<<2); // REG Field extension bit 
 	instr->MODRM |= (reg&0x7)<<3; // Operand 2 (register to add with)
 
@@ -554,6 +554,15 @@ void X64Emitter::sib(bool ismem, int scale, int reg, char* sib) {
 	if (ismem) // copy index into base
 		*sib |= (reg&0x7);
 	return;
+}
+
+int X64Emitter::getLength() {
+	return this->ptr;
+}
+
+void X64Emitter::clear() {
+	memset(this->buffer, 0, this->ptr);
+	this->ptr = 0;
 }
 
 bool X64Emitter::regNeedsSIB(int reg) {

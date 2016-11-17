@@ -193,6 +193,8 @@ public:
 	// Returns the size of the sib part.
 	// LSB to MSB order when pushing them
 
+	int getLength();
+	void clear();
 	char* genBytes32(int32_t disp);
 	char* genBytes64(int64_t imm64);
 	void pushimm64(int64_t imm64);

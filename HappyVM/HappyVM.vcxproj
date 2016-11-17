@@ -80,7 +80,6 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>-favor:INTEL64 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +147,8 @@
     <ClInclude Include="vm.h" />
     <ClInclude Include="vm_emitter.h" />
     <ClInclude Include="x64emitter.h" />
+    <ClInclude Include="X86Emitter.h" />
+    <ClInclude Include="x86emitter_testing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HappyVM.cpp" />
@@ -160,6 +161,7 @@
     </ClCompile>
     <ClCompile Include="vm.cpp" />
     <ClCompile Include="x64emitter.cpp" />
+    <ClCompile Include="x86emitter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

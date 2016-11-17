@@ -1,7 +1,0 @@
-﻿  HappyVM.cpp
-z:\dev\happyvm\happyvm\HArray.h(18): warning C4065: switch statement contains 'default' but no 'case' labels
-HappyVM.cpp(197): warning C4244: 'initializing' : conversion from 'time_t' to 'const long double', possible loss of data
-HappyVM.cpp(227): warning C4244: 'initializing' : conversion from 'time_t' to 'const long double', possible loss of data
-  Generating code
-  Finished generating code
-  HappyVM.vcxproj -> Z:\Dev\HappyVM\x64\Release\HappyVM.exe

@@ -69,8 +69,8 @@ void StringSubBenchmark();
 
 int main(int argc, _TCHAR* argv[])
 {
-	//testJit();
-	//return 0;
+	testJit();
+	return 0;
 
 	// AST testing
 	/*cout << "Enter expression to be evaluated" << endl;

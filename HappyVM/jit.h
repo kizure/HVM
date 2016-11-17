@@ -1,11 +1,12 @@
 #include <Windows.h>
-#include "x64emitter.h"
+#include "x86emitter.h"
 
-typedef long long (*JitFunc)(void*);
-int test(int);
+typedef int (*JitFunc)(void*);
 
 void testJit() {
 	int size = 64;
+
+	// test();
 
 	// x64 basics https://software.intel.com/en-us/articles/introduction-to-x64-assembly
 	
@@ -14,28 +15,16 @@ void testJit() {
 
 	// Useful for figuring out registers http://vikaskumar.org/amd64/
 
-	// Make sure to compile under x64 else it won't work correctly.
-
-	/*unsigned char code[] = {
-		0x48, 0xc7, 0xc0, 0x2a, 0x0, 0x0, 0x0, // mov 42, rax
-		0xc3 // ret
-	};*/
-
-	/*unsigned char code[] = {
-		0x48, 0x89, 0xc8, // mov rax, rcx
-		0x48, 0x83, 0xc0, 0x02, // add rax, 2
-		0xc3 // ret
-	};*/
-	
-	// Currently doesn't do much.
-	X64Emitter emitter = *new X64Emitter();
-	emitter.movr64rm64(REG_RAX, new MEM_REF(REG_INT_ARG1, 1, 1));
-	emitter.ret();
-
 	void* memory = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
 	
+	X86Emitter* emitter = new X86Emitter();
+	emitter->genInstruction(0x0, 0, 1, new Operand(X86_REGISTER_32_EAX, X86_REGISTER_32_EBX, 2, 0xffff), new Operand(X86_REGISTER_32_EBX));
+
+	// STOP RUNNING AT THE MOMENT
+	return;
+
 	// Copy into prog data into memory
-	memcpy(memory, emitter.buffer, size);
+	memcpy(memory, emitter->buffer, size);
 	
 	// Make executable
 	DWORD oldProtect;
