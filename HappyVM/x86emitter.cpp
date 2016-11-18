@@ -33,7 +33,41 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	// Displacement
 	// Immediate
 
-	// Combos:
+	// EXPLICIT FOR EBP
+	//	r32, [r32]					(should work)
+	//	r32, [r32+offset]			(should work)
+	//  r32, [r32*n+offset]			(should work)
+	//	r32, [r32*n+r32]			(should work)
+	//  r32, [r32*n+r32+offset]		(should work)
+	//  [r32], r32					(should work d=0)
+	//  [r32+offset], r32			(should work d=0)
+	//	[r32*n+offset], r32			(should work d=0)
+	//	[r32*n+r32], r32			(should work d=0)
+	//  [r32*n+r32+offset], r32		(should work d=0)
+	//	[r32], imm32				
+	//  [r32+offset], imm32			
+	//	[r32*n+offset], imm32		
+	//	[r32*n+r32], imm32			
+	//  [r32*n+r32+offset], imm32	 
+
+	// EXPLICIT FOR ESP (this requires SIB byte to work correctly.)
+	//	r32, [r32]					
+	//	r32, [r32+offset]			
+	//  r32, [r32*n+offset]			
+	//	r32, [r32*n+r32]			
+	//  r32, [r32*n+r32+offset]		
+	//  [r32], r32					
+	//  [r32+offset], r32			
+	//	[r32*n+offset], r32			
+	//	[r32*n+r32], r32			
+	//  [r32*n+r32+offset], r32		
+	//	[r32], imm32				
+	//  [r32+offset], imm32			
+	//	[r32*n+offset], imm32		
+	//	[r32*n+r32], imm32			
+	//  [r32*n+r32+offset], imm32	
+
+	// Combos (for every other register):
 	//	r32, r32					(should work)
 	//	r32, [r32]					(should work)
 	//	r32, [r32+offset]			(should work)
@@ -45,12 +79,12 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	//	[r32*n+offset], r32			(should work d=0)
 	//	[r32*n+r32], r32			(should work d=0)
 	//  [r32*n+r32+offset], r32		(should work d=0)
-	//  r32, imm32					
-	//	[r32], imm32				
-	//  [r32+offset], imm32			
-	//	[r32*n+offset], imm32		
-	//	[r32*n+r32], imm32			
-	//  [r32*n+r32+offset], imm32	 
+	//  r32, imm32					(should work d=0, 1<<8 on opcode maybe)
+	//	[r32], imm32				(should work d=0, 1<<8 on opcode maybe)
+	//  [r32+offset], imm32			(should work d=0, 1<<8 on opcode maybe)
+	//	[r32*n+offset], imm32		(should work d=0, 1<<8 on opcode maybe)
+	//	[r32*n+r32], imm32			(should work d=0, 1<<8 on opcode maybe)
+	//  [r32*n+r32+offset], imm32	(should work d=0, 1<<8 on opcode maybe)
 
 	Instruction* instruction = new Instruction();
 
@@ -59,10 +93,12 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 
 	bool Areg = a->mem == false;
 	bool Breg = b->mem == false;
-	
-	if (!Areg && !Breg) assert(false && "Cannot have two memory operands");
+	bool Bimm = b->isImmediate;
 
-	if (Areg && Breg) // reg, reg
+	if (!Areg && !Breg) assert(false && "Cannot have two memory operands");
+	if (a->isImmediate) assert(false && "Destination operand cannot be an immediate value");
+
+	if (Areg && (Breg || Bimm)) // reg, reg
 		instruction->ModRM |= MODRM_REGISTER_REGISTER;
 	else {
 		if (!Areg) { // A reg is memory
@@ -112,8 +148,22 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 		assert(false && "Invalid direction bit, either 0 or 1");
 	}
 
-	if (!Areg) { // [b], r32
+	if (!Areg) { // [b], r32/imm32
+
+		if (Bimm) { // [r32], imm32
+			instruction->RequiresImmediate = true;
+			instruction->ImmediateSize = 4;
+			instruction->Immediate = this->genInt32(b->immediate);
+		}
+
 		if (a->offset==0 && a->scale == 1 && a->hasbaseReg==false) { // [r32]
+			if (a->reg==X86_REGISTER_32_EBP) {
+				instruction->ModRM&=0x3f; // clear mod bit.
+				instruction->ModRM |= MODRM_SIB_DISPLACEMENT_8_SIGNED;
+				instruction->RequiresDisplacement = true;
+				instruction->DisplacementSize = 1;
+				instruction->Displacement = this->genByte(0); // Displacement of zero.
+			}
 			return instruction;
 		} else if (a->offset != 0 && a->scale == 1 && a->hasbaseReg==false) { // [r32+offset]
 			instruction->RequiresDisplacement = true;
@@ -165,6 +215,13 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 		}
 	} else if (!Breg) { // r32,[b]
 		if (b->offset==0 && b->scale == 1 && b->hasbaseReg==false) { // [r32]
+			if (b->reg==X86_REGISTER_32_EBP) {
+				instruction->ModRM&=0x3f; // clear mod bit.
+				instruction->ModRM |= MODRM_SIB_DISPLACEMENT_8_SIGNED;
+				instruction->RequiresDisplacement = true;
+				instruction->DisplacementSize = 1;
+				instruction->Displacement = this->genByte(0); // Displacement of zero.
+			}
 			return instruction;
 		} else if (b->offset != 0 && b->scale == 1 && b->hasbaseReg==false) { // [r32+offset]
 			instruction->RequiresDisplacement = true;
@@ -214,6 +271,12 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 				instruction->SIB |= SIB_NO_BASE_REGISTER;
 			}
 		}
+	}
+
+	if (Bimm) {
+		instruction->RequiresImmediate = true;
+		instruction->ImmediateSize = 4;
+		instruction->Immediate = this->genInt32(b->immediate);
 	}
 
 	return instruction;

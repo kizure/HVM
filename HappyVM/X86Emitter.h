@@ -79,10 +79,13 @@ struct Operand {
 	unsigned char extrareg;
 	unsigned char scale;
 	int offset;
+	int immediate;
+	bool isImmediate;
 
-	Operand(unsigned char reg) : mem(false), hasbaseReg(false), scale(1), offset(0), reg(reg) {}
-	Operand(unsigned char reg, unsigned char scale, int offset) : mem(true), hasbaseReg(false), scale(scale), offset(offset), reg(reg) {}
-	Operand(unsigned char reg, unsigned char reg2, unsigned char scale, int offset) : mem(true), hasbaseReg(true), scale(scale), offset(offset), reg(reg), extrareg(reg2) {}
+	Operand(int32_t imm32) : immediate(imm32), mem(false), hasbaseReg(false), scale(1), offset(0), isImmediate(true), reg(0) {}
+	Operand(unsigned char reg) : mem(false), hasbaseReg(false), scale(1), offset(0), reg(reg), isImmediate(false) {}
+	Operand(unsigned char reg, unsigned char scale, int offset) : mem(true), isImmediate(false), hasbaseReg(false), scale(scale), offset(offset), reg(reg) {}
+	Operand(unsigned char reg, unsigned char reg2, unsigned char scale, int offset) : mem(true), isImmediate(false), hasbaseReg(true), scale(scale), offset(offset), reg(reg), extrareg(reg2) {}
 };
 
 class X86Emitter {
@@ -95,6 +98,12 @@ public:
 	unsigned char* buffer;
 private:
 	
+	unsigned char* genByte(int8_t value) {
+		unsigned char* memory = (unsigned char*)malloc(sizeof(int8_t));
+		memory[0] = value&0xff;
+		return memory;
+	}
+
 	unsigned char* genInt32(int32_t value) {
 		unsigned char* memory = (unsigned char*)malloc(sizeof(int32_t));
 		memory[0] = (value)&0xff;
