@@ -18,7 +18,7 @@ void testJit() {
 	void* memory = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
 	
 	X86Emitter* emitter = new X86Emitter();
-	emitter->genInstruction(0x80, 0, 1, new Operand((unsigned char)X86_REGISTER_32_EBX, X86_REGISTER_32_EAX, 2, 0xffff), new Operand(0xff));
+	emitter->genInstruction(0x80, 0, 1, new Operand((unsigned char)X86_REGISTER_32_EBP, X86_REGISTER_32_EBX, 2, 0xffff), new Operand(0xff));
 
 	// STOP RUNNING AT THE MOMENT
 	return;

@@ -44,11 +44,11 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	//	[r32*n+offset], r32			(should work d=0)
 	//	[r32*n+r32], r32			(should work d=0)
 	//  [r32*n+r32+offset], r32		(should work d=0)
-	//	[r32], imm32				
-	//  [r32+offset], imm32			
-	//	[r32*n+offset], imm32		
-	//	[r32*n+r32], imm32			
-	//  [r32*n+r32+offset], imm32	 
+	//	[r32], imm32				(should work d=0, 1<<8 on opcode maybe)
+	//  [r32+offset], imm32			(should work d=0, 1<<8 on opcode maybe)
+	//	[r32*n+offset], imm32		(should work d=0, 1<<8 on opcode maybe)
+	//	[r32*n+r32], imm32			(should work d=0, 1<<8 on opcode maybe)
+	//  [r32*n+r32+offset], imm32	(should work d=0, 1<<8 on opcode maybe)
 
 	// EXPLICIT FOR ESP (this requires SIB byte to work correctly.)
 	//	r32, [r32]					
