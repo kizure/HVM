@@ -57,16 +57,16 @@ In the main HappyVM.cpp file the following code can be used as an example to run
 The VM Emitter supports jump patching so labels can be used without knowing their address immediately. (jumping forward)
 
 ## Todo List:
-- Implement FLOATs reading from the binary (pushObject)
-- Implement ARRAYs reading from the binary (pushObject)
+- Implement ARRAYs reading and emitting from the binary (pushObject)
 - Finish ARRAY operations.
+- Implement ARRAY load and write instructions.
+	push arraypointer, push index, push value, awrite (For writing to array)
+	push arraypointer, push index, aread (For reading to array, will push item onto stack)
 - Implement ARRAY compare
 - Implement ARRAY skipInstruction feature.
-- Test STRING data type
-- Test array data type.
-- Test pointer data type. (Now supports pointer -> pointer -> ... -> value)
+- Test ARRAY data type.
+- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
 - Test skipInstruction to make sure it works correctly.
-- Basic Optimization - Use peek for test instead of popping and then pushing back onto the stack.
 	
 ### Long term:
 - Runtime optimization (aimed at JIT)
