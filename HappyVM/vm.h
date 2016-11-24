@@ -1,8 +1,8 @@
-#ifndef VM_H
-#define VM_H
-
 #include "stack.h"
 #include "HObject.h"
+
+#ifndef VM_H
+#define VM_H
 
 	/* ------ MicroVM Instruction Set ----  */
 	/* Instruction Type: 1 byte             */
@@ -63,11 +63,9 @@ public:
 private:
 	void execute();
 	void pushObject();
-	HObject* popObjFromStack(bool* pointer);
-	HObject* getArray();
+	HObject* popObjFromStack();
 	HObject* recursivePointers(HObject* o);
 	int getInt();
-	float getFloat();
 	void skipInstruction();
 
 	bool running;

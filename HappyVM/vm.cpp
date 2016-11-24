@@ -60,19 +60,16 @@ void HappyVM::execute() {
 	case HOP_SHR:
 	case HOP_SHL:
 		{
-			bool wasPointer = false;
-			HObject* b = this->popObjFromStack(&wasPointer);
-			HObject* a = this->popObjFromStack(nullptr); // Leave it on stack.
+			HObject* b = this->popObjFromStack();
+			HObject* a = this->popObjFromStack();
 			a->operation(b, (HInstruction)data);
 			this->dataStack->push(a);
-			printf("Pointer? : %i\n", wasPointer);
-			if (!wasPointer)
-				delete b; // Cleanup as b no longer exists UNLESS it was a pointer.
+			delete b; // Cleanup as b no longer exists.
 		}
 		break;
 	case HOP_NOT:
 		{
-			HObject* a = this->popObjFromStack(nullptr);
+			HObject* a = this->popObjFromStack();
 			a->operation(nullptr, HOP_NOT);
 			this->dataStack->push(a);
 		}
@@ -84,8 +81,7 @@ void HappyVM::execute() {
 		break;
 	case HOP_POP: // Remove from the stack, does nothing really, just for cleanup.
 		{
-			HObject* o = this->dataStack->pop();
-			delete o;
+			delete this->dataStack->pop();
 		}
 		break;
 	case HOP_JMP:
@@ -113,8 +109,8 @@ void HappyVM::execute() {
 	case HOP_TEST:
 		{
 			char cmp = this->prog[this->ip++];
-			HObject* b = this->popObjFromStack(nullptr);
-			HObject* a = this->popObjFromStack(nullptr);
+			HObject* b = this->popObjFromStack();
+			HObject* a = this->popObjFromStack();
 			int result = a->cmp(b);
 
 			this->dataStack->push(a);
@@ -132,54 +128,6 @@ void HappyVM::execute() {
 			this->skipInstruction();
 		}
 		break;
-	case HOP_LDITM: // Load Item from array onto stack
-		{
-			// Push Index (HInt)
-			// Push Array (or pointer)
-
-			bool wasPointer = false;
-
-			HObject* ary = this->popObjFromStack(nullptr);
-			HObject* index = this->popObjFromStack(&wasPointer);
-
-			if (ObjectUtils::instanceof<HInt>(index) && ObjectUtils::instanceof<HArray>(ary)) {
-				HInt* idx = dynamic_cast<HInt*>(index);
-				HArray* nary = dynamic_cast<HArray*>(ary);
-
-				this->dataStack->push(nary->getValue(*static_cast<int*>(idx->getValue()))); // Push array item back onto stack
-			} else {
-				assert(false && "Load Item instruction failed, requires integer for index and array type for array");
-			}
-
-			if (!wasPointer)
-				delete index;
-			break;
-		}
-	case HOP_STITM:
-		{
-			// Push index
-			// Push item (to put onto array)
-			// Push Array (or pointer)
-			
-			bool wasPointer = false;
-
-			HObject* ary = this->popObjFromStack(nullptr);
-			HObject* item = this->popObjFromStack(nullptr);
-			HObject* index = this->popObjFromStack(&wasPointer);
-
-			if (ObjectUtils::instanceof<HInt>(index) && ObjectUtils::instanceof<HArray>(ary)) {
-				HInt* idx = dynamic_cast<HInt*>(index);
-				HArray* nary = dynamic_cast<HArray*>(ary);
-				nary->setValue(*static_cast<int*>(idx->getValue()), item);
-			} else {
-				assert(false && "Store Item instruction failed, requires integer for index and array type for array");
-			}
-
-			if (!wasPointer)
-				delete index;
-
-			break;
-		}
 	case HOP_END:
 		this->running = false;
 		break;
@@ -223,17 +171,14 @@ void HappyVM::skipInstruction() {
 		this->ip+=4;
 }
 
-HObject* HappyVM::popObjFromStack(bool* pointer) {
+HObject* HappyVM::popObjFromStack() {
 	HObject* obj = this->dataStack->pop();
 
 	// Check if it is a pointer, if so 
 	if (ObjectUtils::instanceof<HPointer>(obj)) {
-		if (pointer !=nullptr) // Was a pointer.
-			*pointer = true;
 		HPointer* pointer = dynamic_cast<HPointer*>(obj);
 		int offset = *static_cast<int*>(pointer->getValue());
-		printf("Pointer Offset: %i\n", offset);
-		obj = this->recursivePointers(this->dataStack->lookat(offset));
+		obj = this->recursivePointers(this->dataStack->lookback(offset));
 		delete pointer;
 	}
 
@@ -244,57 +189,19 @@ HObject* HappyVM::recursivePointers(HObject* o) {
 	if (ObjectUtils::instanceof<HPointer>(o)) {
 		HPointer* pointer = dynamic_cast<HPointer*>(o);
 		int offset = *static_cast<int*>(pointer->getValue());
-		return this->recursivePointers(this->dataStack->lookat(offset));
+		return this->recursivePointers(this->dataStack->lookback(offset));
 	} else {
 		return o;
 	}
 }
 
-HObject* HappyVM::getArray() {
-	// Binary layout
-	// int for size of array
-	// For each item in array
-	//		uint8 for type
-	//		the data for that type.
-	// next item
+int HappyVM::getInt() {
+	char b1 = this->prog[this->ip++]; // MSB
+	char b2 = this->prog[this->ip++];
+	char b3 = this->prog[this->ip++];
+	char b4 = this->prog[this->ip++]; // LSB
 
-	int length = this->getInt();
-	HArray* result = new HArray(length);
-	for (int i = 0;i < length;i++) {
-		unsigned char type = this->prog[this->ip++];
-		switch (type) {
-		case HOP_INT_TYPE: // HInt
-			result->setValue(i, new HInt(this->getInt()));
-			break;
-		case HOP_FLOAT_TYPE: // HFloat
-			result->setValue(i, new HFloat(this->getFloat()));
-			break;
-		case HOP_STRING_TYPE: // HString (zero terminated)
-			{			
-				char uLen = this->prog[this->ip++];
-				char lLen = this->prog[this->ip++];
-
-				int len = uLen << 8 | lLen;
-
-				char* data = (char*)malloc(sizeof(char) * len); // 64KB buffer.
-
-				for(int i = 0;i < len;i++) {
-					data[i] = this->prog[this->ip++];
-				}
-
-				result->setValue(i, new HString(data, len));
-			}
-			break;
-		case HOP_ARRAY_TYPE: 
-			result->setValue(i, this->getArray());
-			break;
-		case HOP_POINTER_TYPE:
-			result->setValue(i, new HPointer(this->getInt())); // Get pointer offset address.
-			break;
-		}
-	}
-
-	return result;
+	return b1<<24|b2<<16|b3<<8|b4;
 }
 
 void HappyVM::pushObject() {
@@ -310,12 +217,18 @@ void HappyVM::pushObject() {
 		}
 		break;
 	case HOP_FLOAT_TYPE: // HFloat
-		{
-			o = new HFloat(this->getFloat());
-		}
 		break;
 	case HOP_STRING_TYPE: // HString (zero terminated)
 		{			
+			// A way to reduce the wasted memory problem
+			// A singly linked list which allocates small blocks of memory at a time 256 characters per chunk?
+			// Once a chunk gets full a new one is created to and pointed to.
+			// This can then be traversed to get the data back out of into a single char*.
+			// The only problem with this is that is is a HUGE performance destroyed due to the added complexity
+			// All of these issues make me want to go for a 2 byte length before the string.
+			// That would be simpler, faster and waste less memory, only loose 1 byte of space in program data.
+			// Also, as 2 byte length the max size would be 0xffff characters (65535)
+
 			// Max of 65535 characters. (64KB)
 			char uLen = this->prog[this->ip++];
 			char lLen = this->prog[this->ip++];
@@ -332,7 +245,6 @@ void HappyVM::pushObject() {
 		}
 		break;
 	case HOP_ARRAY_TYPE: // HArray
-		o = this->getArray();
 		break;
 	case HOP_POINTER_TYPE:
 		{
@@ -342,28 +254,6 @@ void HappyVM::pushObject() {
 	}
 
 	this->dataStack->push(o);
-}
-
-int HappyVM::getInt() {
-	char b1 = this->prog[this->ip++]; // MSB
-	char b2 = this->prog[this->ip++];
-	char b3 = this->prog[this->ip++];
-	char b4 = this->prog[this->ip++]; // LSB
-
-	return b1<<24|b2<<16|b3<<8|b4;
-}
-
-float HappyVM::getFloat() {
-	char b1 = this->prog[this->ip++]; // MSB
-	char b2 = this->prog[this->ip++];
-	char b3 = this->prog[this->ip++];
-	char b4 = this->prog[this->ip++]; // LSB
-	FloatUnion f;
-	f.buffer[0] = b1;
-	f.buffer[1] = b2;
-	f.buffer[2] = b3;
-	f.buffer[3] = b4;
-	return f.value;
 }
 
 void HappyVM::stop() {

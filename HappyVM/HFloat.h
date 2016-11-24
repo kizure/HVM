@@ -25,8 +25,7 @@ public:
 	virtual int cmp(HObject* o) {
 		HFloat* b = nullptr;
 		if (o != nullptr) { // If it is null then operation on itself.
-			if (ObjectUtils::instanceof<HFloat>(o)==false)
-				return HOP_CONDITION_NOT_EQUAL;
+			assert(ObjectUtils::instanceof<HFloat>(o) && "HFloat: non-float type attempting operation with integer type.");
 			b = dynamic_cast<HFloat*>(o);
 		}
 

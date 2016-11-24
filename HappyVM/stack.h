@@ -28,12 +28,9 @@ public:
 		return this->stack[pos-1];
 	}
 
-	T* lookat(int address) {
-		return this->stack[address];
-	}
-
-	int getSize() {
-		return this->pos;
+	T* lookback(int offset) {
+		assert(this->pos - offset - 1 > 0 && "HappyVM: Stack underflow, lookback failed");
+		return this->stack[this->pos-offset-1];
 	}
 
 	Stack(int size) {

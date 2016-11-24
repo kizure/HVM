@@ -13,36 +13,25 @@ X86Emitter::~X86Emitter() {
 	}
 }
 
-void X86Emitter::emit(Instruction* instruction) {		
-	// Order of bytes:
-	// Prefixes (Currently not in use.)
-	// OpCode	(Currently only a single byte)
-	// ModRM
-	// SIB
-	// Displacement
-	// Immediate
-	this->push(instruction->OpCode);
-	this->push(instruction->ModRM);
-	if (instruction->RequiresSib)
-		this->push(instruction->SIB);
-	if (instruction->RequiresDisplacement)
-		for (int i = 0;i < instruction->DisplacementSize;i++)
-			this->push(*(instruction->Displacement+i));
-	if (instruction->RequiresImmediate)
-		for (int i = 0;i < instruction->ImmediateSize;i++)
-			this->push(*(instruction->Immediate+i));
-}
-
 Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int size, Operand* a, Operand* b) {
 	// Define some variable names:
 	//	A is the destination thing
 	//	B is the source thing
 
 	// Not using the size argument for generating instructions at the moment.
-	// Not using displacement 8 for (-128 to 127 offset)? at the moment, unneccessary complication at the moment.
+	// Not using displacement 8 at the moment, unneccessary complication at the moment.
 
 	// IMPORTANT INFORMATION: ESP CANNOT BE ADDRESSED DUE TO COLLIDING WITH SOMETHING
+	// SOME MORE IMPORTANT INFORMATION: EBP ALSO HAS COLLISION ISSUES.
 	// SOME INFORMATION ABOUT IT ON A WEBSITE. C-JUMP.COM
+
+	// Order of bytes:
+	// Prefixes
+	// OpCode
+	// ModRM
+	// SIB
+	// Displacement
+	// Immediate
 
 	// EXPLICIT FOR EBP
 	//	r32, [r32]					(should work)
@@ -60,11 +49,6 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	//	[r32*n+offset], imm32		(should work d=0, 1<<8 on opcode maybe)
 	//	[r32*n+r32], imm32			(should work d=0, 1<<8 on opcode maybe)
 	//  [r32*n+r32+offset], imm32	(should work d=0, 1<<8 on opcode maybe)
-	//  [r32]						
-	//  [r32+offset]				
-	//	[r32*n+offset]				
-	//	[r32*n+r32]					
-	//  [r32*n+r32+offset]			
 
 	// EXPLICIT FOR ESP (this requires SIB byte to work correctly.)
 	//	r32, [r32]					
@@ -82,14 +66,8 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	//	[r32*n+offset], imm32		
 	//	[r32*n+r32], imm32			
 	//  [r32*n+r32+offset], imm32	
-	//  [r32]						
-	//  [r32+offset]				
-	//	[r32*n+offset]				
-	//	[r32*n+r32]					
-	//  [r32*n+r32+offset]			
 
 	// Combos (for every other register):
-	//	imm32
 	//	r32, r32					(should work)
 	//	r32, [r32]					(should work)
 	//	r32, [r32+offset]			(should work)
@@ -107,18 +85,8 @@ Instruction* X86Emitter::genInstruction(unsigned char opcode, int direction, int
 	//	[r32*n+offset], imm32		(should work d=0, 1<<8 on opcode maybe)
 	//	[r32*n+r32], imm32			(should work d=0, 1<<8 on opcode maybe)
 	//  [r32*n+r32+offset], imm32	(should work d=0, 1<<8 on opcode maybe)
-	//  [r32]						
-	//  [r32+offset]				
-	//	[r32*n+offset]				
-	//	[r32*n+r32]					
-	//  [r32*n+r32+offset]			
 
 	Instruction* instruction = new Instruction();
-
-	// Single operand instruction.
-	if (b == nullptr && a != nullptr) {
-		// Do the single operand cases!
-	}
 
 	// Direction and size will be blank for opcodes which don't use them.
 	instruction->OpCode = opcode | (direction&1) << 1 | (size & 1);

@@ -44,12 +44,12 @@ public:
 					char* newString = (char*)malloc(newSize * sizeof(char));
 					
 					if (index == 0) { // Start
-						memcpy(newString, this->Chars+b->Length, newSize * sizeof(char));
+						memcpy(newString, this->Chars+b->Length, newSize);
 					} else if (index + b->Length == this->Length) { // End
-						memcpy(newString, this->Chars, newSize * sizeof(char));
+						memcpy(newString, this->Chars, newSize);
 					} else { // Somewhere between
 						memcpy(newString, this->Chars, index-1); // Copy in upto string
-						memcpy(newString+(index-1), this->Chars+index, b->Length * sizeof(char));
+						memcpy(newString+(index-1), this->Chars+index, b->Length);
 					}
 					
 					free(this->Chars);
@@ -62,13 +62,9 @@ public:
 		}
 	}
 
-	virtual int cmp(HObject* o) {			
-		HString* b = nullptr;
-		if (o != nullptr) { // If it is null then operation on itself.
-			if (ObjectUtils::instanceof<HString>(o)==false)
-				return HOP_CONDITION_NOT_EQUAL;
-			b = dynamic_cast<HString*>(o);
-		}
+	virtual int cmp(HObject* o) {
+		assert(ObjectUtils::instanceof<HString>(o) && "HString: non-string type attempting operation with string type.");
+		HString* b = dynamic_cast<HString*>(o);
 
 		if (b->Length!=this->Length)
 			return HOP_CONDITION_NOT_EQUAL;
@@ -79,10 +75,6 @@ public:
 		}
 
 		return HOP_CONDITION_EQUAL;
-	}
-
-	int getLength() {
-		return this->Length;
 	}
 
 	virtual void* getValue() { return this->Chars;}

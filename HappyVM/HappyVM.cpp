@@ -12,7 +12,6 @@
 #include "HFloat.h"
 #include "HArray.h"
 #include "HString.h"
-#include "HPointer.h"
 #include "assembler.h"
 #include "jit.h"
 #include "tokenizer.h"
@@ -70,8 +69,8 @@ void StringSubBenchmark();
 
 int main(int argc, _TCHAR* argv[])
 {
-	//testJit();
-	//return 0;
+	testJit();
+	return 0;
 
 	// AST testing
 	/*cout << "Enter expression to be evaluated" << endl;
@@ -83,23 +82,23 @@ int main(int argc, _TCHAR* argv[])
 		Tokenizer* tokenizer = new Tokenizer();
 		tokenizer->tokenize(&input);
 		tokenizer->printTokenStream();
-		
-		delete tokenizer;
 
-		//AST* ast = new AST(tokenizer->getTokens());
-		//ast->buildAst();
+		AST* ast = new AST(tokenizer->getTokens());
+		ast->buildAst();
 	}*/
 
 	//	TODO:
+	//		- Implement FLOATs reading from the binary (pushObject)
+	//		- Implement ARRAYs reading from the binary (pushObject)
+	//		- Finish ARRAY operations.
+	//		- Implement ARRAY compare
 	//		- Implement ARRAY skipInstruction feature.
-	//		- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
-	//			A bug with pointers at the moment. Kinda understand the problem, don't really know how to fix it semi-easily.
+	//		- Test STRING data type
+	//		- Test array data type.
+	//		- Test pointer data type. (Now supports pointer -> pointer -> ... -> value)
 	//		- Test skipInstruction to make sure it works correctly.
 	//
-	//		- Basic Optimization - Use peek for TEST instruction instead of popping and then pushing back onto the stack.
-	//		- Possible optimization - For skipping instructions. We have to look at the next instructions data and skip through it all. (especially if it is an array)
-	//			To solve this, could seperate the instruction and it's data and then add a fixed size pointer for that instruction (32 bit integer) which references the data.
-	//			This would simplify skip instruction a lot but not sure if it would improve performance unless a lot of arrays were being skipped over in data which I doubt.
+	//		- Basic Optimization - Use peek for test instead of popping and then pushing back onto the stack.
 	//
 	//	Long term:
 	//		- Runtime optimization
@@ -108,87 +107,29 @@ int main(int argc, _TCHAR* argv[])
 	//		- Make some sort of programming language so it can be used easily.
 	//			Implement the language slowly and build it up. for example start at 1+2
 	//
-	//	Bug:
-	//		- An issue with HPointer has appeared (As the pointer gets de-referenced it changes to the actual value. As each operation deletes the value, it results in a deleted pointer on the 'dataStack')
-	//			which try to get deleted again and doesn't work and crashes. (undefined-behaviour)
-	//
 	//	VM Limitations:
 	//		Fixed sized stack for both call stack and data stack. (cannot dynamically shrink and grow)
 	//		Limited to a max of 32 unqiue instructions (shouldn't be an issue I hope.)
 	//		Max compiled string length is 65535 (runtime is 'unlimited')
-	//		Max static array length is signed 32 bit integer. (probably changed to unsigned?)
 
 	VmEmitter* emitter = new VmEmitter(64);
+	int start = emitter->label();
 	
-	HArray* testArray = new HArray(4);
-	testArray->setValue(0, new HInt(4));
-	testArray->setValue(1, new HFloat(1.2f));
-	testArray->setValue(2, new HFloat(2.0f));
-	testArray->setValue(3, new HFloat(4.0f));
-
-	HArray* testArray2 = new HArray(4);
-	testArray2->setValue(0, new HInt(1));
-	testArray2->setValue(1, new HFloat(1.2f));
-	testArray2->setValue(2, new HFloat(2.1f));
-	testArray2->setValue(3, new HFloat(4.0f));
-
-	emitter->push(testArray);
-	emitter->push(testArray2);
-	emitter->sub();
-	emitter->end();
-
 	// (2 + 4) * (5 * 2)
-	// 2 4 5 2	operands
-	// + * *	operators
-	// 2 4 + 5 2 * * postfix to infix.
-	
-	/*emitter->push(2);
+	emitter->push(2);
 	emitter->push(4);
 	emitter->add();
 	emitter->push(5);
 	emitter->push(2);
 	emitter->mul();
 	emitter->mul();
-	emitter->pop(); // "Clean stack"
+	emitter->pop();
 	emitter->jmp(start);
 	emitter->end();
-	*/
-	/*
-	char* potato = (char*)malloc(sizeof(char)*6);
-	memcpy(potato, "potato", 6);
-	
-	char* isnice = (char*)malloc(sizeof(char)*8);
-	memcpy(isnice, " is nice", 8);
-	
-	char* ontoast = (char*)malloc(sizeof(char)*9);
-	memcpy(ontoast, " on toast", 9);
-
-	emitter->push(potato, 6);
-	emitter->push(isnice, 8);
-	emitter->push(ontoast, 9);
-	emitter->pushPtr(0);
-	emitter->pushPtr(1);
-	emitter->pushPtr(2);
-	emitter->add();
-	emitter->breakpoint();
-	emitter->add();
-	emitter->pop();
-	emitter->pop();
-	emitter->pop();
-	emitter->end();*/
 
 	HappyVM* testVm = new HappyVM(emitter->complete());
 	
 	testVm->run();
-
-	cout << "Stack pointer: " << testVm->dataStack->getSize() << endl;
-
-	HObject* o = testVm->dataStack->pop();
-
-	HInt* result = reinterpret_cast<HInt*>(o);
-	int iresult = *static_cast<int*>(result->getValue());
-	cout << "Result: " << iresult << endl;
-	
 	/*
 	const int iterations = 100000000; // 100 million operations
 	cout << "Doing " << iterations << " iterations of the VM program" << endl;
@@ -217,4 +158,63 @@ int main(int argc, _TCHAR* argv[])
 	system("pause");
 
 	return 0; // No return error.
+}
+
+void StringAddBenchmark() {
+	const int iterations = 100000000; // 100 million operations
+	cout << "Doing " << iterations << " iterations of the HOP_ADD operation for two strings" << endl;
+	
+	const char* hello = "hello ";
+	const char* world = "world";
+
+	long double elapsed = 0;
+	for (int i= 0;i < iterations;i++) {
+		char* aBuf = (char*)malloc(6 * sizeof(char)); // Hello world
+		char* bBuf = (char*)malloc(5 * sizeof(char)); // word
+		memcpy(aBuf, hello, 6*sizeof(char));
+		memcpy(bBuf, world, 5*sizeof(char));
+
+		HString* sa = new HString(aBuf, 6);
+		HString* sb = new HString(bBuf, 5);
+		const long double start = time(0) * 1000;
+		sa->operation(sb, HOP_ADD);
+		elapsed += time(0) * 1000 - start;
+		//cout << "Result: " << static_cast<char*>(sa->getValue()) << endl;
+
+		delete sa;
+		delete sb;
+	}
+	
+	const long double perIteration = elapsed / (double)iterations;
+
+	cout << "Took: " << perIteration * 1000 << "u/s per operation" << endl;
+}
+
+void StringSubBenchmark() {
+	const int iterations = 100000000; // 100 million operations
+	cout << "Doing " << iterations << " iterations of the HOP_SUB operation for two strings" << endl;
+	
+	const char* helloWord = "hello world";
+	const char* world = "world";
+
+	long double elapsed = 0;
+	for (int i= 0;i < iterations;i++) {
+		char* aBuf = (char*)malloc(11 * sizeof(char)); // Hello world
+		char* bBuf = (char*)malloc(5 * sizeof(char)); // word
+		memcpy(aBuf, helloWord, 11*sizeof(char));
+		memcpy(bBuf, world, 5*sizeof(char));
+
+		HString* sa = new HString(aBuf, 11);
+		HString* sb = new HString(bBuf, 5);
+		const long double start = time(0) * 1000;
+		sa->operation(sb, HOP_SUB);
+		elapsed += time(0) * 1000 - start;
+
+		delete sa;
+		delete sb;
+	}
+	
+	const long double perIteration = elapsed / (double)iterations;
+
+	cout << "Took: " << perIteration * 1000 << "u/s per operation" << endl;
 }
