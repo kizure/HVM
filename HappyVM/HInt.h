@@ -35,7 +35,8 @@ public:
 	virtual int cmp(HObject* o) {
 		HInt* b = nullptr;
 		if (o != nullptr) { // If it is null then operation on itself.
-			assert(ObjectUtils::instanceof<HInt>(o) && "HInt: non-integer type attempting operation with integer type.");
+			if (ObjectUtils::instanceof<HInt>(o)==false)
+				return HOP_CONDITION_NOT_EQUAL;
 			b = dynamic_cast<HInt*>(o);
 		}
 

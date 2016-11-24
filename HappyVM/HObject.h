@@ -6,6 +6,8 @@
 using namespace std;
 
 // Also test might need to be made less general (JPZ, JNZ, etc)
+
+// Max of 32 instructions. 0-31
 typedef enum {
 	HOP_ADD=0, // DONE
 	HOP_SUB=1, // DONE
@@ -26,6 +28,8 @@ typedef enum {
 	HOP_SHL=15, // DONE
 	HOP_SHR=16, // DONE
 	HOP_BRKPT=18, // DONE
+	HOP_LDITM=19, // Load Item (Array)
+	HOP_STITM=20, // Store Item (Array)
 } HInstruction;
 
 // Used to change floats from bytes to actual floating point values. (endianness could be an issue)
@@ -74,7 +78,7 @@ class HObject {
 	//bool markFlag;
 public:
 	HObject();
-	~HObject(){}
+	virtual ~HObject() {};
 	//bool isMarked();
 	//void mark();
 	//void unmark();

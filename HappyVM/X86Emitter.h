@@ -73,14 +73,14 @@ struct Operand {
 	// Immediate
 	// Just a register
 	// Memory reference w/ register*scale+register+offset
-	bool mem;
-	bool hasbaseReg;
-	unsigned char reg;
-	unsigned char extrareg;
-	unsigned char scale;
-	int offset;
-	int immediate;
-	bool isImmediate;
+	bool mem; // Is memory reference.
+	bool hasbaseReg; // Has +reg32
+	unsigned char reg; // Register
+	unsigned char extrareg; // Extra register
+	unsigned char scale; // Scale of register
+	int offset; // Offset of memory reference.
+	int immediate; // Immediate value if used.
+	bool isImmediate; // Is immediate value used.
 
 	Operand(int32_t imm32) : immediate(imm32), mem(false), hasbaseReg(false), scale(1), offset(0), isImmediate(true), reg(0) {}
 	Operand(unsigned char reg) : mem(false), hasbaseReg(false), scale(1), offset(0), reg(reg), isImmediate(false) {}
@@ -94,7 +94,8 @@ public:
 	~X86Emitter();
 	Instruction* genInstruction(unsigned char opcode, int direction, int size, Operand* a);
 	Instruction* genInstruction(unsigned char opcode, int direction, int size, Operand* a, Operand* b);
-	
+	void emit(Instruction* instruction);
+
 	unsigned char* buffer;
 private:
 	
