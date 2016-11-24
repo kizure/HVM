@@ -205,14 +205,18 @@ void HappyVM::skipInstruction() {
 			this->ip += 4;
 			break;
 		case HOP_ARRAY_TYPE: // Needs to be implemented.
+			{
+				int len = this->getUShort();
+				for (int i = 0;i < len;i++) {
+					char dataType = this->prog[this->ip++];
+					this->skipInstruction(dataType);
+				}
+			}
 			assert(false && "skip instruction array data type not implemented yet");
 			break;
 		case HOP_STRING_TYPE: 
-			{	
-				char uLen = this->prog[this->ip++];
-				char lLen = this->prog[this->ip++];
-				int len = uLen << 8 | lLen;
-				this->ip+=len;
+			{
+				this->ip+=this->getUShort();
 			}
 				break;
 		}
@@ -221,6 +225,37 @@ void HappyVM::skipInstruction() {
 		this->ip+=1;
 	else if (data == HOP_JMP || data == HOP_CALL)
 		this->ip+=4;
+}
+
+void HappyVM::skipInstruction(char dataType) {
+	switch (dataType) {
+		case HOP_INT_TYPE:
+		case HOP_FLOAT_TYPE:
+		case HOP_POINTER_TYPE:
+			this->ip += 4;
+			break;
+		case HOP_ARRAY_TYPE: // Needs to be implemented.
+			{
+				int len = this->getUShort();
+				for (int i = 0;i < len;i++) {
+					char dataType = this->prog[this->ip++];
+					this->skipInstruction(dataType);
+				}
+			}
+			assert(false && "skip instruction array data type not implemented yet");
+			break;
+		case HOP_STRING_TYPE: 
+			{	
+				this->ip+=this->getUShort();
+			}
+			break;
+	}
+}
+
+inline int HappyVM::getUShort() {
+	char uLen = this->prog[this->ip++];
+	char lLen = this->prog[this->ip++];
+	return uLen << 8 | lLen;
 }
 
 HObject* HappyVM::popObjFromStack(bool* pointer) {
@@ -271,10 +306,7 @@ HObject* HappyVM::getArray() {
 			break;
 		case HOP_STRING_TYPE: // HString (zero terminated)
 			{			
-				char uLen = this->prog[this->ip++];
-				char lLen = this->prog[this->ip++];
-
-				int len = uLen << 8 | lLen;
+				int len = this->getUShort();
 
 				char* data = (char*)malloc(sizeof(char) * len); // 64KB buffer.
 
@@ -317,10 +349,8 @@ void HappyVM::pushObject() {
 	case HOP_STRING_TYPE: // HString (zero terminated)
 		{			
 			// Max of 65535 characters. (64KB)
-			char uLen = this->prog[this->ip++];
-			char lLen = this->prog[this->ip++];
-
-			int len = uLen << 8 | lLen;
+			
+			int len = this->getUShort();
 
 			char* data = (char*)malloc(sizeof(char) * len); // 64KB buffer.
 

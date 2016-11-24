@@ -67,8 +67,10 @@ private:
 	HObject* getArray();
 	HObject* recursivePointers(HObject* o);
 	int getInt();
+	inline int getUShort();
 	float getFloat();
 	void skipInstruction();
+	void skipInstruction(char dataType);
 
 	bool running;
 	int ip; // Instruction pointer.
