@@ -17,6 +17,7 @@ using namespace std;
 HappyVM::HappyVM(void) {
 	this->callStack = new Stack<CallFrame>(128);
 	this->dataStack = new Stack<HObject>(2048);
+	this->initEMethods();
 	this->ip = 0;
 	this->ops = 0;
 }
@@ -24,9 +25,16 @@ HappyVM::HappyVM(void) {
 HappyVM::HappyVM(char* data) {
 	this->callStack = new Stack<CallFrame>();
 	this->dataStack = new Stack<HObject>();
+	this->initEMethods();
 	this->ip = 0;
 	this->prog = data; // Set the program data for the vm to execute.
 	this->ops = 0;
+}
+
+void HappyVM::initEMethods() {
+	this->methods = (emethod*)malloc(sizeof(emethod)*1024); // Up to 1024 external methods for now.
+
+	methods[0] = &HappyVM::vmPrint;
 }
 
 void HappyVM::run(void) {
@@ -37,6 +45,7 @@ void HappyVM::run(void) {
 }
 
 void HappyVM::execute() {
+#if 0
 	ops++;
 	const long double now = time(0)*1000;
 
@@ -45,6 +54,8 @@ void HappyVM::execute() {
 		ops = 0;
 		this->ltime = now;
 	}
+
+#endif
 
 	char data = this->prog[this->ip++] & 0x1F;
 
@@ -180,6 +191,16 @@ void HappyVM::execute() {
 
 			break;
 		}
+	case HOP_ECALL:
+		{
+			int callId = this->getInt();
+			// Lookup id and call method.
+
+			emethod p = this->methods[callId];
+			(this->*p)();
+
+			break;
+		}
 	case HOP_END:
 		this->running = false;
 		break;
@@ -193,6 +214,28 @@ void HappyVM::execute() {
 	}
 }
 
+void HappyVM::vmPrint() {
+	bool ptr = false;
+	HObject* obj = this->popObjFromStack(&ptr);
+
+	if (ObjectUtils::instanceof<HInt>(obj)){
+		HInt* var = dynamic_cast<HInt*>(obj);
+		printf("%i", *static_cast<int*>(var->getValue()));
+	} else if (ObjectUtils::instanceof<HString>(obj)) {
+		HString* var = dynamic_cast<HString*>(obj);
+		printf("%.*s", var->getLength(), static_cast<char*>(var->getValue()));
+	} else if (ObjectUtils::instanceof<HFloat>(obj)) {
+		HFloat* var = dynamic_cast<HFloat*>(obj);
+		printf("%f", *static_cast<float*>(var->getValue())); // Print the float
+	} else if (ObjectUtils::instanceof<HArray>(obj)) {
+		HArray* var = dynamic_cast<HArray*>(obj);
+		printf("HArray [%i]", var->getValue()); // Printf address of the array.
+	}
+
+	if (!ptr)
+		delete obj;
+}
+
 void HappyVM::skipInstruction() {
 	char data = this->prog[this->ip++] & 0x1F;
 	char dataType = this->prog[this->ip-1] & 0xE0; // Only get the top 3 bits.
@@ -204,26 +247,25 @@ void HappyVM::skipInstruction() {
 		case HOP_POINTER_TYPE:
 			this->ip += 4;
 			break;
-		case HOP_ARRAY_TYPE: // Needs to be implemented.
+		case HOP_ARRAY_TYPE:
 			{
 				int len = this->getUShort();
 				for (int i = 0;i < len;i++) {
 					char dataType = this->prog[this->ip++];
 					this->skipInstruction(dataType);
 				}
+				break;
 			}
-			assert(false && "skip instruction array data type not implemented yet");
-			break;
 		case HOP_STRING_TYPE: 
 			{
 				this->ip+=this->getUShort();
-			}
 				break;
+			}
 		}
 	} 
 	else if (data==HOP_TEST)
 		this->ip+=1;
-	else if (data == HOP_JMP || data == HOP_CALL)
+	else if (data == HOP_JMP || data == HOP_CALL || data == HOP_ECALL)
 		this->ip+=4;
 }
 

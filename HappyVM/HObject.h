@@ -30,6 +30,7 @@ typedef enum {
 	HOP_BRKPT=18, // DONE
 	HOP_LDITM=19, // Load Item (Array)
 	HOP_STITM=20, // Store Item (Array)
+	HOP_ECALL=21, // External call
 } HInstruction;
 
 // Used to change floats from bytes to actual floating point values. (endianness could be an issue)

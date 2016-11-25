@@ -52,6 +52,8 @@ typedef struct {
 
 class HappyVM {
 public:
+	typedef void (HappyVM::*emethod)(); // Used for external calls.
+
 	HappyVM(void);
 	HappyVM(char*);
 	~HappyVM(void);
@@ -59,6 +61,7 @@ public:
 	void stop();
 	void setProgram(char*);
 	Stack<HObject> *dataStack; // Data Stack
+	void initEMethods();
 	
 private:
 	void execute();
@@ -72,6 +75,12 @@ private:
 	void skipInstruction();
 	void skipInstruction(char dataType);
 
+	// VM External call functions
+	void vmPrint();
+
+	// End of external call functions
+
+	emethod* methods;
 	bool running;
 	int ip; // Instruction pointer.
 	Stack<CallFrame> *callStack; // Call Stack used for the

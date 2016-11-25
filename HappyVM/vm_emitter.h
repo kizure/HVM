@@ -149,6 +149,12 @@ public:
 		this->pushChar(HOP_CALL);
 		this->pushInt(address);
 	}
+
+	void ecall(int address) {
+		this->pushChar(HOP_ECALL);
+		this->pushInt(address);
+	}
+
 	// ===============================================
 
 	void ret() {

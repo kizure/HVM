@@ -52,6 +52,8 @@ using namespace compiler;
 			ret a+b;
 		)
 
+		adder(10, 4);
+
 		for (0 to p) (
 		)
 
@@ -91,15 +93,15 @@ int main(int argc, _TCHAR* argv[])
 	}*/
 
 	//	TODO:
-	//		- Implement ARRAY skipInstruction feature.
 	//		- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
 	//			A bug with pointers at the moment. Kinda understand the problem, don't really know how to fix it semi-easily.
-	//		- Test skipInstruction to make sure it works correctly.
-	//
+	//		- Test skipInstruction to make sure it works (This is aimed at arrays in particular.)
+	//		
 	//		- Basic Optimization - Use peek for TEST instruction instead of popping and then pushing back onto the stack.
 	//		- Possible optimization - For skipping instructions. We have to look at the next instructions data and skip through it all. (especially if it is an array)
 	//			To solve this, could seperate the instruction and it's data and then add a fixed size pointer for that instruction (32 bit integer) which references the data.
 	//			This would simplify skip instruction a lot but not sure if it would improve performance unless a lot of arrays were being skipped over in data which I doubt.
+	//
 	//
 	//	Long term:
 	//		- Runtime optimization
@@ -120,21 +122,10 @@ int main(int argc, _TCHAR* argv[])
 
 	VmEmitter* emitter = new VmEmitter(64);
 	
-	HArray* testArray = new HArray(4);
-	testArray->setValue(0, new HInt(4));
-	testArray->setValue(1, new HFloat(1.2f));
-	testArray->setValue(2, new HFloat(2.0f));
-	testArray->setValue(3, new HFloat(4.0f));
-
-	HArray* testArray2 = new HArray(4);
-	testArray2->setValue(0, new HInt(1));
-	testArray2->setValue(1, new HFloat(1.2f));
-	testArray2->setValue(2, new HFloat(2.1f));
-	testArray2->setValue(3, new HFloat(4.0f));
-
-	emitter->push(testArray);
-	emitter->push(testArray2);
-	emitter->sub();
+	emitter->push(" is a number\n", 13);
+	emitter->push(100);
+	emitter->ecall(0);
+	emitter->ecall(0);
 	emitter->end();
 
 	// (2 + 4) * (5 * 2)
@@ -179,8 +170,14 @@ int main(int argc, _TCHAR* argv[])
 
 	HappyVM* testVm = new HappyVM(emitter->complete());
 	
+	
+	const long double start = time(0) * 1000;
 	testVm->run();
-
+	const long double duration = time(0)*1000 - start;
+	cout << "Executed in " << duration << "ms" << endl;
+	
+	
+	/*
 	cout << "Stack pointer: " << testVm->dataStack->getSize() << endl;
 
 	HObject* o = testVm->dataStack->pop();
@@ -188,7 +185,8 @@ int main(int argc, _TCHAR* argv[])
 	HInt* result = reinterpret_cast<HInt*>(o);
 	int iresult = *static_cast<int*>(result->getValue());
 	cout << "Result: " << iresult << endl;
-	
+	*/
+
 	/*
 	const int iterations = 100000000; // 100 million operations
 	cout << "Doing " << iterations << " iterations of the VM program" << endl;
@@ -209,8 +207,6 @@ int main(int argc, _TCHAR* argv[])
 	
 	cout << "Took: " << perIteration * 1000 << "u/s per execution" << endl;
 	*/
-	//StringAddBenchmark();
-	//StringSubBenchmark();
 
 	delete testVm;
 
