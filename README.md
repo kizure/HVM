@@ -30,6 +30,9 @@ HappyVM or HVM for short is a stack-based VM meaning that is has no registers, i
 | SHL | Pops and shifts a value to the left by x amount | |
 | SHR | Pops and shifts a value to the right by x amount | |
 | BRKPT | Breakpoint, if a debugger is attached to the VM then it will fire a breakpoint | No effect without debugger attached | 
+| LDITM | Gets an item from an array. | Usage: push index, push array, lditm |
+| STITM | Stores an item into an array. | Usage: push index, push item, push array, stitm |
+| ECALL | External call to c++ | Usage: push callid, ecall | external methods have to be registered with the VM |
 
 ## Usage:
 In the VMs current state, the VM only runs through programming it and compiling the project.
