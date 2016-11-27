@@ -77,6 +77,10 @@ private:
 
 	// VM External call functions
 	void vmPrint();
+	void vmSin();
+	void vmCos();
+	void vmTan();
+	void vmSqrt();
 
 	// End of external call functions
 

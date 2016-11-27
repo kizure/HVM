@@ -52,6 +52,10 @@ using namespace compiler;
 			ret a+b;
 		)
 
+		func:MyStruct +(a:MyStruct) {
+			+ operator.
+		}
+
 		adder(10, 4);
 
 		for (0 to p) (
@@ -65,6 +69,10 @@ using namespace compiler;
 
 		if (...) (
 		)
+		elseif (
+		)
+		else (
+		)
 */
 
 void StringAddBenchmark();
@@ -76,7 +84,7 @@ int main(int argc, _TCHAR* argv[])
 	//return 0;
 
 	// AST testing
-	/*cout << "Enter expression to be evaluated" << endl;
+	cout << "Enter expression to be evaluated" << endl;
 	while (true) {
 		cout << "> ";
 		string input;
@@ -90,7 +98,7 @@ int main(int argc, _TCHAR* argv[])
 
 		//AST* ast = new AST(tokenizer->getTokens());
 		//ast->buildAst();
-	}*/
+	}
 
 	//	TODO:
 	//		- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)

@@ -11,6 +11,7 @@
 #include "HString.h"
 #include "HArray.h"
 #include <ctime>
+#include <cmath>
 
 using namespace std;
 
@@ -35,6 +36,10 @@ void HappyVM::initEMethods() {
 	this->methods = (emethod*)malloc(sizeof(emethod)*1024); // Up to 1024 external methods for now.
 
 	methods[0] = &HappyVM::vmPrint;
+	methods[1] = &HappyVM::vmSin;
+	methods[2] = &HappyVM::vmCos;
+	methods[3] = &HappyVM::vmTan;
+	methods[4] = &HappyVM::vmSqrt;
 }
 
 void HappyVM::run(void) {
@@ -235,6 +240,101 @@ void HappyVM::vmPrint() {
 	if (!ptr)
 		delete obj;
 }
+
+// EXTERNAL FUNCTIONS //
+void HappyVM::vmCos() {
+	bool ptr = false;
+	HObject* obj = this->popObjFromStack(&ptr);
+
+	float val = 0;
+
+	if (ObjectUtils::instanceof<HInt>(obj)){
+		HInt* var = dynamic_cast<HInt*>(obj);
+		val = *static_cast<int*>(var->getValue());
+	} else if (ObjectUtils::instanceof<HFloat>(obj)) {
+		HFloat* var = dynamic_cast<HFloat*>(obj);
+		val = *static_cast<float*>(var->getValue());
+	} else{
+		printf("HappyVM Warning: Cos function cannot accept this data type, int and float only.");
+	}
+
+	// Push result onto stack for cos function
+	this->dataStack->push(new HFloat(cosf(val)));
+
+	if (!ptr)
+		delete obj;
+}
+
+void HappyVM::vmSin() {
+	bool ptr = false;
+	HObject* obj = this->popObjFromStack(&ptr);
+
+	float val = 0;
+
+	if (ObjectUtils::instanceof<HInt>(obj)){
+		HInt* var = dynamic_cast<HInt*>(obj);
+		val = *static_cast<int*>(var->getValue());
+	} else if (ObjectUtils::instanceof<HFloat>(obj)) {
+		HFloat* var = dynamic_cast<HFloat*>(obj);
+		val = *static_cast<float*>(var->getValue());
+	} else{
+		printf("HappyVM Warning: Sin function cannot accept this data type, int and float only.");
+	}
+
+	// Push result onto stack for sin function
+	this->dataStack->push(new HFloat(sinf(val)));
+
+	if (!ptr)
+		delete obj;
+}
+
+void HappyVM::vmTan() {
+	bool ptr = false;
+	HObject* obj = this->popObjFromStack(&ptr);
+
+	float val = 0;
+
+	if (ObjectUtils::instanceof<HInt>(obj)){
+		HInt* var = dynamic_cast<HInt*>(obj);
+		val = *static_cast<int*>(var->getValue());
+	} else if (ObjectUtils::instanceof<HFloat>(obj)) {
+		HFloat* var = dynamic_cast<HFloat*>(obj);
+		val = *static_cast<float*>(var->getValue());
+	} else{
+		printf("HappyVM Warning: Tan function cannot accept this data type, int and float only.");
+	}
+
+	// Push result onto stack for tan function
+	this->dataStack->push(new HFloat(tanf(val)));
+
+	if (!ptr)
+		delete obj;
+}
+
+void HappyVM::vmSqrt() {
+	bool ptr = false;
+	HObject* obj = this->popObjFromStack(&ptr);
+
+	float val = 0;
+
+	if (ObjectUtils::instanceof<HInt>(obj)){
+		HInt* var = dynamic_cast<HInt*>(obj);
+		val = *static_cast<int*>(var->getValue());
+	} else if (ObjectUtils::instanceof<HFloat>(obj)) {
+		HFloat* var = dynamic_cast<HFloat*>(obj);
+		val = *static_cast<float*>(var->getValue());
+	} else{
+		printf("HappyVM Warning: Sqrt function cannot accept this data type, int and float only.");
+	}
+
+	// Push result onto stack for tan function
+	this->dataStack->push(new HFloat(sqrtf(val)));
+
+	if (!ptr)
+		delete obj;
+}
+
+// END OF EXTERNAL FUNCTIONS //
 
 void HappyVM::skipInstruction() {
 	char data = this->prog[this->ip++] & 0x1F;
