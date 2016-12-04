@@ -12,14 +12,14 @@
 
 %define POINTER_BYTE_SIZE 4
 
-; +1 Stack size
+; +0 Stack size
 ; ret: stack pointer
 create_stack:
     push ebp
     mov ebp, esp
     
     mov eax, [ebp+8]  ; Stack size
-    add eax, 4 ; For Stack Pointer space
+    add eax, POINTER_BYTE_SIZE ; For Stack Pointer space
     
     ; Allocate memory for the stack
     push eax

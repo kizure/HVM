@@ -14,11 +14,18 @@ section .data
     stack_pop_underflow db "Stack pop failed, underflow!", 0
     stack_peek_underflow db "Stack peek failed, underflow!", 0
     stack_lookback_underflow db "Stack lookback failed, underflow!", 0
+    vm_variable_type_mismatch db "Variable type mismatch!", 0
+
+    ; Pointers for the stack and dispatch structs.
+    
+    stack: dd 0
+    dispatch: dd 0
 
 section .text
 global CMAIN
 
 %include "vm.defines.asm"
+%include "vm.variable.asm"
 
 CMAIN:
     mov ebp, esp; for correct debugging
@@ -26,32 +33,50 @@ CMAIN:
     
     ; read files of bytes or something from the arguments at the start.
     
-    push 12
     push 1024
     call create_stack
-    add esp, 8
+    add esp, 4
     
-    push eax
-    push 10 ; fake address
+    mov [stack], eax ; Stack into edx
+    
+    ; Create variable and push to stack
+        push dword VM_VARIABLE_SIZE
+            call mmalloc
+        add esp, 4
+        
+        ; Fill vm_variable struct with information.
+        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
+        mov dword [eax+VM_VARIABLE_DATA], 12
+    push dword [stack] ; Stack
+    push eax ; Stack value
     call stack_push
     add esp, 8
-        
-    push eax
-        push eax
-        call stack_pop
+    
+    ; Create variable and push to stack
+        push dword VM_VARIABLE_SIZE
+            call mmalloc
         add esp, 4
-    pop eax
+        
+        ; Fill vm_variable struct with information.
+        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
+        mov dword [eax+VM_VARIABLE_DATA], 16
+    push dword [stack] ; Stack
+    push eax
+    call stack_push
+    add esp, 8
     
     ; Do some stuff with the stack.
     
-    push eax ; Currently stores the pointer to stack
-    call delete_stack
-    add esp, 4
+    ;push eax ; Currently stores the pointer to stack
+    ;call delete_stack
+    ;add esp, 4
     
-    push 22 ; columns (num of operations)
-    push 5 ; rows (num of data types)
+    push NUM_OF_OPERATIONS ; columns (num of operations)
+    push DATA_TYPE_COUNT ; rows (num of data types)
     call create_dispatch
     add esp, 8
+    
+    mov [dispatch], eax ; Address for dispatch register.
     
     push datatype.int.add
     push datatype.int.sub
@@ -76,21 +101,23 @@ CMAIN:
     push 20
     push 21
     push DATA_TYPE_INT ; Y Index
-    push eax ; Dispatch table
+    push dword [dispatch] ; Dispatch table
     call dispatch_populate_1d
     add esp,96
     
-    push eax
-        push 0
-        push 0
-        push eax
-        call dispatch_get
-        add esp, 12
-        
-        call eax ; Call the address which we dispatched to.
-        
-    pop eax
+    %ifdef EN_PREFETCH
+        ; prefetcht0 [dispatch_address]
+    %endif
     
+    push DATA_TYPE_INT
+    push VM_OPERATION_SUB
+    push dword [dispatch] ; Push *dispatch
+    call dispatch_get
+    add esp, 12
+    
+    push dword [stack] ; Push *stack (should be vm but works for testing)
+    call eax ; Call the address which we dispatched to.
+    add esp, 4
     
     ret
  

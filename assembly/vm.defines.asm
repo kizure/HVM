@@ -6,16 +6,18 @@
 %define DATA_TYPE_POINTER   4
 %define DATA_TYPE_COUNT     5
 
+; Prefetch hinting to the processor. Used for dispatch table caching.
+; Yet to be properly implemented.
+%define EN_PREFETCH
+
 ; VM Variable struct
 
 ; Struct VM_VARIABLE
 ;   int32 Type
-;   int32 *ptr (for array or string only)
-;   int32 value (for int, float and pointer only)
-%define VM_VARIABLE_SIZE            12
-%define VM_VARIABLE_TYPE            0
-%define VM_VARIABLE_DATA_PTR        4
-%define VM_VARIABLE_DATA_VAL        8
+;   int32 *ptr (can be both pointer and immediate data value, like int or float)
+%define VM_VARIABLE_SIZE        8
+%define VM_VARIABLE_TYPE        0
+%define VM_VARIABLE_DATA        4 ; Either pointer or actual value depending on data type.
 
 ; Struct Vm
 ;   Stack* DataStack
