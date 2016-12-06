@@ -3,6 +3,7 @@
 ; For calling conventions.
 ; http://unixwiz.net/techtips/win32-callconv-asm.html
 ; Values return through EAX from functions.
+; callee saved registers are EAX, ECX, EDX
 
 extern _malloc
 extern _free
@@ -25,7 +26,6 @@ section .text
 global CMAIN
 
 %include "vm.defines.asm"
-%include "vm.variable.asm"
 
 CMAIN:
     mov ebp, esp; for correct debugging
@@ -33,47 +33,15 @@ CMAIN:
     
     ; read files of bytes or something from the arguments at the start.
     
-    push 1024
+    push 16
     call create_stack
     add esp, 4
     
     mov [stack], eax ; Stack into edx
     
-    ; Create variable and push to stack
-        push dword VM_VARIABLE_SIZE
-            call mmalloc
-        add esp, 4
-        
-        ; Fill vm_variable struct with information.
-        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
-        mov dword [eax+VM_VARIABLE_DATA], 12
-    push dword [stack] ; Stack
-    push eax ; Stack value
-    call stack_push
-    add esp, 8
-    
-    ; Create variable and push to stack
-        push dword VM_VARIABLE_SIZE
-            call mmalloc
-        add esp, 4
-        
-        ; Fill vm_variable struct with information.
-        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
-        mov dword [eax+VM_VARIABLE_DATA], 16
-    push dword [stack] ; Stack
-    push eax
-    call stack_push
-    add esp, 8
-    
-    ; Do some stuff with the stack.
-    
-    ;push eax ; Currently stores the pointer to stack
-    ;call delete_stack
-    ;add esp, 4
-    
     push NUM_OF_OPERATIONS ; columns (num of operations)
     push DATA_TYPE_COUNT ; rows (num of data types)
-    call create_dispatch
+        call create_dispatch
     add esp, 8
     
     mov [dispatch], eax ; Address for dispatch register.
@@ -102,22 +70,56 @@ CMAIN:
     push 21
     push DATA_TYPE_INT ; Y Index
     push dword [dispatch] ; Dispatch table
-    call dispatch_populate_1d
+        call dispatch_populate_1d
     add esp,96
+    
+    test_loop:
+    ; Create variable and push to stack
+        push dword VM_VARIABLE_SIZE
+            call mmalloc
+        add esp, 4
+        
+        ; Fill vm_variable struct with information.
+        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
+        mov dword [eax+VM_VARIABLE_DATA], 12
+    push dword [stack] ; Stack
+    push eax ; Stack value
+        call stack_push
+    add esp, 8
+    
+    ; Create variable and push to stack
+        push dword VM_VARIABLE_SIZE
+            call mmalloc
+        add esp, 4
+        
+        ; Fill vm_variable struct with information.
+        mov dword [eax+VM_VARIABLE_TYPE], DATA_TYPE_INT
+        mov dword [eax+VM_VARIABLE_DATA], 16
+    push dword [stack] ; Stack
+    push eax
+        call stack_push
+    add esp, 8
     
     %ifdef EN_PREFETCH
         ; prefetcht0 [dispatch_address]
     %endif
     
+    ; test if it works.
     push DATA_TYPE_INT
-    push VM_OPERATION_SUB
+    push VM_OPERATION_ADD
     push dword [dispatch] ; Push *dispatch
-    call dispatch_get
+       call dispatch_get
     add esp, 12
     
+    ; For testing only.
+    ; Pop and free
+    
+    ; Everywhere else is fine.
     push dword [stack] ; Push *stack (should be vm but works for testing)
-    call eax ; Call the address which we dispatched to.
+        call eax ; Call the address which we dispatched to.
     add esp, 4
+    
+    jmp test_loop
     
     ret
  
@@ -128,9 +130,10 @@ println_string:
     
     push dword [ebp+8] ; string address
     push dword sfmt ; String format
-    call _printf
+        call _printf
     add esp, 8
     
+    mov esp, ebp
     pop ebp
     ret
     

@@ -33,6 +33,7 @@ create_dispatch:
         mov dword [eax+DISPATCH_X_SIZE], ebx ; Put X size into meta data.
     pop ebx
     
+    mov esp, ebp
     pop ebp
     ret
     
@@ -50,6 +51,7 @@ delete_dispatch:
     
     pop eax
     
+    mov esp, ebp
     pop ebp
     ret
 
@@ -107,6 +109,7 @@ dispatch_populate_1d:
     pop ebx
     pop eax
     
+    mov esp, ebp
     pop ebp
     ret
 
@@ -133,5 +136,6 @@ dispatch_get:
     pop ecx
     pop ebx
     
+    mov esp, ebp
     pop ebp
     ret

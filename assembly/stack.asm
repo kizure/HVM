@@ -28,6 +28,7 @@ create_stack:
     
     mov dword [eax+STACK_POINTER], 0 ; Set stack pointer value to 0
     
+    mov esp, ebp
     pop ebp
     ret
     
@@ -41,6 +42,7 @@ delete_stack:
     call mfree
     add esp, 4
     
+    mov esp, ebp
     pop ebp
     ret
    
@@ -78,6 +80,8 @@ stack_pop.failed:
     
 stack_pop.end:
     pop ebx
+    
+    mov esp, ebp
     pop ebp
     ret
 
@@ -106,6 +110,8 @@ stack_push:
     pop ecx
     pop ebx
     pop eax
+    
+    mov esp, ebp
     pop ebp
     ret
     
@@ -127,6 +133,8 @@ stack_peek:
         mov eax, [eax+ebx*POINTER_BYTE_SIZE+STACK_ARRAY] ; Put value at top of stack into eax to return
     
     pop ebx
+    
+    mov esp, ebp
     pop ebp
     ret
 
@@ -136,6 +144,8 @@ stack_peek.failed:
     add esp, 4
     xor eax, eax ; Set pointer to zero to show it failed.
     pop ebx
+    
+    mov esp, ebp
     pop ebp
     ret
     
@@ -158,6 +168,8 @@ stack_lookback:
         mov eax, [eax+ebx*POINTER_BYTE_SIZE+STACK_ARRAY]
         
     pop ebx
+    
+    mov esp, ebp
     pop ebp
     ret
     
@@ -167,5 +179,7 @@ stack_lookback.failed:
     add esp, 4
     xor eax, eax ; Set to zero to show it failed.
     pop ebx
+    
+    mov esp, ebp
     pop ebp
     ret

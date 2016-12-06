@@ -29,9 +29,7 @@ datatype.int.add:
     push ebp
     mov ebp, esp
     
-    push eax
-    push ebx
-    push ecx ; A variable
+    push eax ; *vm_instance / variable A
     push edx ; B variable
     push edi ; temp
         
@@ -39,28 +37,29 @@ datatype.int.add:
         push eax
             ;push dword [eax+VM_DATASTACK] ; pop off the data stack
             push eax ; tmp I think for the moment as I am actually pushing the stack for testing.
-            call stack_pop
+                call stack_pop
             add esp, 4
             mov edx, eax ; B variable
         pop eax
         
-        push eax
+        ;push eax
             ;push dword [eax+VM_DATASTACK] ; pop off the data stack
             push eax ; tmp
-            call stack_pop
+                call stack_pop
             add esp, 4
-            mov ecx, eax ; A variable
-        pop eax
+            ;mov ecx, eax ; A variable
+        ;pop eax
         
+        ; Reuse eax as it is no longer needed.
         ; Type check both vm_variables
-        mov edi, [ecx+VM_VARIABLE_TYPE] ; Get variable type A
-        CMP edi, [edx+VM_VARIABLE_TYPE] ; compare a type with b type.
+        mov edi, [eax+VM_VARIABLE_TYPE] ; Get variable type A
+        cmp edi, [edx+VM_VARIABLE_TYPE] ; compare a type with b type.
     
         jne datatype.int.mismatch       ; if types are not equal, then throw error.
         
         ; A = A+B
         mov edi, [edx+VM_VARIABLE_DATA]
-        add [ecx+VM_VARIABLE_DATA], edi
+        add [eax+VM_VARIABLE_DATA], edi
         
         ; Destroy/Release B
         
@@ -73,15 +72,24 @@ datatype.int.add:
     
     datatype.int.add.continue:
     
+    ; TEMPORARY CODE FOR TESTING PURPOSES ONLY.
+    ; Free both integers, this won't happen in actual vm.
+    
+    push eax
+        call mfree
+    add esp, 4
+    
+    push edx
+       call mfree
+    add esp, 4
+    
     pop edi
     pop edx
-    pop ecx
-    pop ebx
     pop eax
     
+    mov esp, ebp
     pop ebp
     ret
-    
     
 datatype.int.sub:
     push ebp
