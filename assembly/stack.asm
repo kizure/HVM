@@ -39,7 +39,7 @@ delete_stack:
     
     ; Free stack memory.
     push dword [ebp+8] ; Stack Pointer
-    call mfree
+        call mfree
     add esp, 4
     
     mov esp, ebp
