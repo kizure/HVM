@@ -61,7 +61,7 @@ The VM Emitter supports jump patching so labels can be used without knowing thei
 
 ## Todo List:
 - Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
-- Test skipInstruction to make sure it works correctly.
+- Port to x86 assembly. (In progress, kinda on hold while I get the cpp version working fully first.)
 	
 ### Long term:
 - Runtime optimization (aimed at JIT)
