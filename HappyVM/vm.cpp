@@ -52,12 +52,14 @@ void HappyVM::run(void) {
 void HappyVM::execute() {
 #if 0
 	ops++;
-	const long double now = time(0)*1000;
+	if (ops % 1000 == 0) { // Only check every thousand ticks or so.
+		const long double now = time(0)*1000;
 
-	if (now - this->ltime > 1000) {
-		cout << ops << " operations/s" << endl;
-		ops = 0;
-		this->ltime = now;
+		if (now - this->ltime > 1000) {
+			cout << ops << " operations/s" << endl;
+			ops = 0;
+			this->ltime = now;
+		}
 	}
 
 #endif

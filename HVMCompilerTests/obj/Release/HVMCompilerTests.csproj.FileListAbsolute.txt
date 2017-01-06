@@ -1,0 +1,7 @@
+Z:\Dev\HappyVM\HVMCompilerTests\bin\Release\HVMCompilerTests.dll
+Z:\Dev\HappyVM\HVMCompilerTests\bin\Release\HVMCompilerTests.pdb
+Z:\Dev\HappyVM\HVMCompilerTests\obj\Release\HVMCompilerTests.csprojResolveAssemblyReference.cache
+Z:\Dev\HappyVM\HVMCompilerTests\obj\Release\HVMCompilerTests.dll
+Z:\Dev\HappyVM\HVMCompilerTests\obj\Release\HVMCompilerTests.pdb
+Z:\Dev\HappyVM\HVMCompilerTests\bin\Release\HVMCompiler.exe
+Z:\Dev\HappyVM\HVMCompilerTests\bin\Release\HVMCompiler.pdb

@@ -19,8 +19,8 @@ typedef enum {
 	HOP_NOT=7, // DONE
 	HOP_AND=8, // DONE
 	HOP_JMP=9, // DONE
-	HOP_CALL=10, // DONE (not tested)
-	HOP_RET=11, // DONE (not tested)
+	HOP_CALL=10, // DONE
+	HOP_RET=11, // DONE
 	HOP_TEST=12, // DONE
 	HOP_PUSH=13, // DONE
 	HOP_POP=17, // DONE
@@ -28,9 +28,9 @@ typedef enum {
 	HOP_SHL=15, // DONE
 	HOP_SHR=16, // DONE
 	HOP_BRKPT=18, // DONE
-	HOP_LDITM=19, // Load Item (Array)
-	HOP_STITM=20, // Store Item (Array)
-	HOP_ECALL=21, // External call
+	HOP_LDITM=19, // Load Item (Array) DONE
+	HOP_STITM=20, // Store Item (Array) DONE
+	HOP_ECALL=21, // External call DONE
 } HInstruction;
 
 // Used to change floats from bytes to actual floating point values. (endianness could be an issue)

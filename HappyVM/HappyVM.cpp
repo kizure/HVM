@@ -110,7 +110,6 @@ int main(int argc, _TCHAR* argv[])
 	//			To solve this, could seperate the instruction and it's data and then add a fixed size pointer for that instruction (32 bit integer) which references the data.
 	//			This would simplify skip instruction a lot but not sure if it would improve performance unless a lot of arrays were being skipped over in data which I doubt.
 	//
-	//
 	//	Long term:
 	//		- Runtime optimization
 	//		- Make compatible with any endianness.
@@ -141,7 +140,8 @@ int main(int argc, _TCHAR* argv[])
 	// + * *	operators
 	// 2 4 + 5 2 * * postfix to infix.
 	
-	/*emitter->push(2);
+	/*int label_start = emitter->label();
+	emitter->push(2);
 	emitter->push(4);
 	emitter->add();
 	emitter->push(5);
@@ -149,9 +149,9 @@ int main(int argc, _TCHAR* argv[])
 	emitter->mul();
 	emitter->mul();
 	emitter->pop(); // "Clean stack"
-	emitter->jmp(start);
-	emitter->end();
-	*/
+	emitter->jmp(label_start);
+	emitter->end();*/
+	
 	/*
 	char* potato = (char*)malloc(sizeof(char)*6);
 	memcpy(potato, "potato", 6);

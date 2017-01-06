@@ -15,8 +15,8 @@ namespace compiler {
 		TOKEN_OPEN_PARENTHESIS = 5,			// '('
 		TOKEN_CLOSE_PARENTHESIS = 6,		// ')'
 		TOKEN_CONSTANT = 7,					// '[0-9]'
-		TOKEN_TEXT=8,						// '[a-zA-Z]'
 		TOKEN_WHITESPACE=9,					// ' ' or '\t'
+		/*TOKEN_TEXT=8,						// '[a-zA-Z]'
 		TOKEN_TYPE_IDENTIFIER=10,			// ':'
 		TOKEN_EQUALS=11,					// '='
 		TOKEN_END_OF_STATEMENT=12,			// ';'
@@ -39,7 +39,7 @@ namespace compiler {
 		TOKEN_NOT=29,						// '~'
 		TOKEN_XOR=30,						// '^'
 		TOKEN_LEFT_KARET=31,				// '<'
-		TOKEN_RIGHT_KARET=32,				// '>'
+		TOKEN_RIGHT_KARET=32,				// '>'*/
 	};
 
 	struct Token {
@@ -96,7 +96,7 @@ namespace compiler {
 				default:
 					{
 						// if it is a number (0 to 9)
-						if (is_number(token)||isChar(token)) {
+						if (is_number(token)) {
 							*constant += token; // Append character to the string.
 						} else {
 							cout << "Unknown character: " << token << endl;
@@ -117,10 +117,6 @@ namespace compiler {
 				Token* t = (Token*)(*it);
 				cout << "Type: " << t->type << " Value: " << t->value << endl;
 			}
-		}
-
-		string getWord() {
-			string builder;
 		}
 
 		bool is_number(char c) {
