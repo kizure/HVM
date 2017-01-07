@@ -2,3 +2,4 @@ Z:\Dev\HappyVM\HVMCompiler\bin\Release\HVMCompiler.exe
 Z:\Dev\HappyVM\HVMCompiler\bin\Release\HVMCompiler.pdb
 Z:\Dev\HappyVM\HVMCompiler\obj\x86\Release\HVMCompiler.exe
 Z:\Dev\HappyVM\HVMCompiler\obj\x86\Release\HVMCompiler.pdb
+Z:\Dev\HappyVM\HVMCompiler\obj\x86\Release\HVMCompiler.csprojResolveAssemblyReference.cache

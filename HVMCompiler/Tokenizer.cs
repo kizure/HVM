@@ -61,6 +61,9 @@ namespace HVMCompiler
         IfKeyword,
         ElseIfKeyword,
         ElseKeyword,
+        IntKeyword,
+        FloatKeyword,
+        StringKeyword,
         LiteralIdentifier,
     }
 
@@ -68,6 +71,9 @@ namespace HVMCompiler
     {
         public string Value;
         public HVMTokenId Id;
+        public bool IsKeyword = false;
+        public int SourceIndex;
+        public string TokenString;
     }
 
     /// <summary>
@@ -78,31 +84,32 @@ namespace HVMCompiler
 
         private static Dictionary<string, HVMToken> _AvailableTokens = new Dictionary<string, HVMToken>() 
         {
-            { "+", new HVMToken { Id = HVMTokenId.Plus } },
+            // These are defined in a specific order.
             { "+=", new HVMToken { Id = HVMTokenId.PlusEquals } },
-            { "-", new HVMToken { Id = HVMTokenId.Minus } },
+            { "+", new HVMToken { Id = HVMTokenId.Plus } },
             { "-=", new HVMToken { Id = HVMTokenId.MinusEquals } },
-            { "*", new HVMToken { Id = HVMTokenId.Multiply } },
+            { "-", new HVMToken { Id = HVMTokenId.Minus } },
             { "*=", new HVMToken { Id = HVMTokenId.MultiplyEquals } },
-            { "/", new HVMToken { Id = HVMTokenId.Divide } },
+            { "*", new HVMToken { Id = HVMTokenId.Multiply } },
             { "/=", new HVMToken { Id = HVMTokenId.DivideEquals } },
-            { "%", new HVMToken { Id = HVMTokenId.Mod } },
+            { "/", new HVMToken { Id = HVMTokenId.Divide } },
             { "%=", new HVMToken { Id = HVMTokenId.ModEquals } },
-            { "&", new HVMToken { Id = HVMTokenId.And } },
+            { "%", new HVMToken { Id = HVMTokenId.Mod } },
             { "&=", new HVMToken { Id = HVMTokenId.AndEquals } },
-            { "|", new HVMToken { Id = HVMTokenId.Or } },
+            { "&", new HVMToken { Id = HVMTokenId.And } },
             { "|=", new HVMToken { Id = HVMTokenId.OrEquals } },
-            { "^", new HVMToken { Id = HVMTokenId.Xor } },
+            { "|", new HVMToken { Id = HVMTokenId.Or } },
             { "^=", new HVMToken { Id = HVMTokenId.XorEquals } },
+            { "^", new HVMToken { Id = HVMTokenId.Xor } },
             { "~", new HVMToken { Id = HVMTokenId.Negate } },
             { "&&", new HVMToken { Id = HVMTokenId.ConditionalAnd } },
             { "||", new HVMToken { Id = HVMTokenId.ConditionalOr } },
             { "==", new HVMToken { Id = HVMTokenId.ConditionalEquals } },
             { "=", new HVMToken { Id = HVMTokenId.Equals } },
-            { "<", new HVMToken { Id = HVMTokenId.LessThan } },
             { "<=", new HVMToken { Id = HVMTokenId.LessThanEqualTo } },
-            { ">", new HVMToken { Id = HVMTokenId.GreaterThan } },
+            { "<", new HVMToken { Id = HVMTokenId.LessThan } },
             { ">=", new HVMToken { Id = HVMTokenId.GreaterThanEqualTo } },
+            { ">", new HVMToken { Id = HVMTokenId.GreaterThan } },
             { "!=", new HVMToken { Id = HVMTokenId.NotEqualTo } },
             { "$", new HVMToken { Id = HVMTokenId.PointerIdentifier } },
             { "(", new HVMToken { Id = HVMTokenId.OpenParenthesis } },
@@ -113,22 +120,25 @@ namespace HVMCompiler
             { "]", new HVMToken { Id = HVMTokenId.CloseSquareBracket } },
             { ";", new HVMToken { Id = HVMTokenId.StatementTerminator } },
             { ":", new HVMToken { Id = HVMTokenId.TypeIdentifier } },
-            { "var", new HVMToken { Id = HVMTokenId.VarKeyword } },
-            { "address", new HVMToken { Id = HVMTokenId.AddressKeyword } },
-            { "sizeof", new HVMToken { Id = HVMTokenId.SizeofKeyword } },
-            { "struct", new HVMToken { Id = HVMTokenId.StructKeyword } },
-            { "func", new HVMToken { Id = HVMTokenId.FuncKeyword } },
-            { "while", new HVMToken { Id = HVMTokenId.WhileKeyword } },
-            { "ret", new HVMToken { Id = HVMTokenId.RetKeyword } },
-            { "for", new HVMToken { Id = HVMTokenId.ForKeyword } },
-            { "to", new HVMToken { Id = HVMTokenId.ToKeyword } },
-            { "in", new HVMToken { Id = HVMTokenId.InKeyword } },
-            { "if", new HVMToken { Id = HVMTokenId.IfKeyword } },
-            { "elseif", new HVMToken { Id = HVMTokenId.ElseIfKeyword } },
-            { "else", new HVMToken { Id = HVMTokenId.ElseKeyword } },
-            // Will have to be careful with the "" for the key.
-            // The literal identifier is for identifiers, struct name, variable names, function names, types, etc
-            { "", new HVMToken { Id = HVMTokenId.LiteralIdentifier } },
+            { "var", new HVMToken { Id = HVMTokenId.VarKeyword, IsKeyword=true } },
+            { "address", new HVMToken { Id = HVMTokenId.AddressKeyword, IsKeyword=true } },
+            { "sizeof", new HVMToken { Id = HVMTokenId.SizeofKeyword, IsKeyword=true } },
+            { "func", new HVMToken { Id = HVMTokenId.FuncKeyword, IsKeyword=true } },
+            { "while", new HVMToken { Id = HVMTokenId.WhileKeyword, IsKeyword=true } },
+            { "ret", new HVMToken { Id = HVMTokenId.RetKeyword, IsKeyword=true } },
+            { "for", new HVMToken { Id = HVMTokenId.ForKeyword, IsKeyword=true } },
+            { "to", new HVMToken { Id = HVMTokenId.ToKeyword, IsKeyword=true } },
+            
+            // Data types, reserved keywords
+            { "struct", new HVMToken { Id = HVMTokenId.StructKeyword, IsKeyword=true } },
+            { "int", new HVMToken { Id = HVMTokenId.IntKeyword, IsKeyword=true } }, // Has to be above in keyword
+            { "string", new HVMToken { Id = HVMTokenId.StringKeyword, IsKeyword=true } },
+            { "float", new HVMToken { Id = HVMTokenId.FloatKeyword, IsKeyword=true } },
+            
+            { "in", new HVMToken { Id = HVMTokenId.InKeyword, IsKeyword=true } },
+            { "if", new HVMToken { Id = HVMTokenId.IfKeyword, IsKeyword=true } },
+            { "elseif", new HVMToken { Id = HVMTokenId.ElseIfKeyword, IsKeyword=true } },
+            { "else", new HVMToken { Id = HVMTokenId.ElseKeyword, IsKeyword=true } },
         };
 
         private List<HVMToken> _Tokens;
@@ -145,11 +155,112 @@ namespace HVMCompiler
 
         public List<HVMToken> GetTokens()
         {
-            _Source = _Source.Replace("\n", "").Replace("\t", "");
+            _Source = _Source.Replace("\n", "").Replace("\t", "").Replace("\r", "");
 
             Console.WriteLine(_Source);
 
+            // These are ordered in a specific way.
+
+            while (_Index < _Source.Length)
+            {
+                bool found = false;
+                HVMToken foundToken = null;
+                char currentChar = _Source[_Index];
+
+                foreach (KeyValuePair<string, HVMToken> tokens in Tokenizer._AvailableTokens)
+                {
+                    // Look for keywords and operators in the available tokens.
+                    if (ContainsString(tokens.Key, _Index))
+                    {
+                        // Create the token with the id and stuff.
+                        foundToken = new HVMToken();
+                        foundToken.Value = tokens.Value.Value;
+                        foundToken.Id = tokens.Value.Id;
+                        foundToken.IsKeyword = tokens.Value.IsKeyword;
+                        foundToken.SourceIndex = _Index;
+                        foundToken.TokenString = tokens.Key;
+
+                        _Index += tokens.Key.Length;
+                        found = true;
+
+                        break;
+                    }
+                }
+
+                if (found == false)
+                {
+                    // Look for some stuff.
+                    // So it could be a space, control character that i have missed?
+                    // Number, word, etc.
+                    if (_Source[_Index] == ' ')
+                        _Index++;
+                    else // Skip over for now, however will change to read string.
+                    {
+                        foundToken = new HVMToken();
+                        foundToken.Id = HVMTokenId.LiteralIdentifier;
+                        foundToken.IsKeyword = false;
+                        foundToken.SourceIndex = _Index;
+                        string literal = GetString();
+                        foundToken.Value = literal;
+                    }
+                }
+                else if (found == true) // Some checking and catching of invalid keyword tokens.
+                {
+                    // Keywords need to be checked that what the keyword thinks it is
+                    // and what it actually is could be different things.
+                    if (foundToken.IsKeyword == true)
+                    {
+                        // This makes you think it needs + 1 however source index is the first character
+                        // For this token so adding the length will go to the last+1 character.
+                        int peekAheadCharacter = foundToken.TokenString.Length + foundToken.SourceIndex;
+                        if (peekAheadCharacter < _Source.Length)
+                        {
+                            char peekAhead = _Source[peekAheadCharacter];
+                            if (char.IsLetterOrDigit(peekAhead) || peekAhead == '_')
+                            {
+                                _Index = foundToken.SourceIndex;
+                                // Read this as a word or it could be a number
+                                // Both are literals in this stage of the compiler.
+                                foundToken = new HVMToken();
+                                foundToken.Id = HVMTokenId.LiteralIdentifier;
+                                foundToken.IsKeyword = false;
+                                foundToken.SourceIndex = _Index;
+                                foundToken.Value = GetString();
+
+                                _Index = foundToken.SourceIndex + foundToken.Value.Length;
+                            }
+                        }
+                    }
+                }
+
+                if (foundToken != null)
+                    Console.WriteLine(foundToken.Id + " " + foundToken.Value);
+            }
+
             return _Tokens;
+        }
+
+        public bool ContainsString(string characters, int offset)
+        {
+            if (offset+characters.Length <= _Source.Length)
+                if (_Source.Substring(offset, characters.Length).Equals(characters))
+                    return true;
+            return false;
+        }
+
+        public string GetString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            char c = _Source[_Index];
+
+            while (char.IsLetterOrDigit(c) || c == '_')
+            {
+                builder.Append(c);
+                c = _Source[++_Index];
+            }
+            
+            return builder.ToString();
         }
     }
 }

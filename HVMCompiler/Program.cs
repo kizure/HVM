@@ -90,9 +90,9 @@ namespace HVMCompiler
 		    )
 
 		    func:$MyStruct +($a:MyStruct, $b:MyStruct) {
-			    var result:MyStruct;
-                result.a = $a.a + $b.a;
-                result.b = $a.b + $b.b;
+			    var result:$MyStruct;
+                $result.a = $a.a + $b.a;
+                $result.b = $a.b + $b.b;
                 ret result;
 		    }
 
@@ -118,11 +118,11 @@ namespace HVMCompiler
 
         static void Main(string[] args)
         {
-            string simpleProgram = @"
-            func orange() ()";
+            string simpleProgram = @"func:int orange() () struct name(a[]:string) var p:test=0;";
+            string simple2Program = @"struct($p:int, index:int) for index(0 to p) (p+=4; p = p + 1; $ptr:int = address(p); )";
 
-            Tokenizer tokens = new Tokenizer(simpleProgram);
-            tokens.GetTokens();
+            Tokenizer tokenizer = new Tokenizer(simpleProgram);
+            List<HVMToken> Tokens = tokenizer.GetTokens();
 
             /*
             HvmEmitter emitter = new HvmEmitter(32);
