@@ -60,7 +60,7 @@ In the main HappyVM.cpp file the following code can be used as an example to run
 The VM Emitter supports jump patching so labels can be used without knowing their address immediately. (jumping forward)
 
 ## Todo List:
-- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
+- Add some more usability to the VM (write more external calls.)
 - Port to x86 assembly. (In progress, kinda on hold while I get the cpp version working fully first.)
 	
 ### Long term:
