@@ -30,6 +30,8 @@ namespace HVMCompiler
         Xor,
         XorEquals,
         Negate,
+        ShiftLeft,
+        ShiftRight,
         ConditionalAnd,
         ConditionalOr,
         ConditionalEquals,
@@ -61,9 +63,6 @@ namespace HVMCompiler
         IfKeyword,
         ElseIfKeyword,
         ElseKeyword,
-        IntKeyword,
-        FloatKeyword,
-        StringKeyword,
         LiteralIdentifier,
     }
 
@@ -77,7 +76,7 @@ namespace HVMCompiler
     }
 
     /// <summary>
-    /// Tokenizer for the language.
+    /// Tokenizer for the programming language.
     /// </summary>
     public class Tokenizer
     {
@@ -106,6 +105,8 @@ namespace HVMCompiler
             { "||", new HVMToken { Id = HVMTokenId.ConditionalOr } },
             { "==", new HVMToken { Id = HVMTokenId.ConditionalEquals } },
             { "=", new HVMToken { Id = HVMTokenId.Equals } },
+            { "<<", new HVMToken { Id = HVMTokenId.ShiftLeft } },
+            { ">>", new HVMToken { Id = HVMTokenId.ShiftRight } },
             { "<=", new HVMToken { Id = HVMTokenId.LessThanEqualTo } },
             { "<", new HVMToken { Id = HVMTokenId.LessThan } },
             { ">=", new HVMToken { Id = HVMTokenId.GreaterThanEqualTo } },
@@ -131,9 +132,9 @@ namespace HVMCompiler
             
             // Data types, reserved keywords
             { "struct", new HVMToken { Id = HVMTokenId.StructKeyword, IsKeyword=true } },
-            { "int", new HVMToken { Id = HVMTokenId.IntKeyword, IsKeyword=true } }, // Has to be above in keyword
-            { "string", new HVMToken { Id = HVMTokenId.StringKeyword, IsKeyword=true } },
-            { "float", new HVMToken { Id = HVMTokenId.FloatKeyword, IsKeyword=true } },
+            //{ "int", new HVMToken { Id = HVMTokenId.IntKeyword, IsKeyword=true } }, // Has to be above in keyword
+            //{ "string", new HVMToken { Id = HVMTokenId.StringKeyword, IsKeyword=true } },
+            //{ "float", new HVMToken { Id = HVMTokenId.FloatKeyword, IsKeyword=true } },
             
             { "in", new HVMToken { Id = HVMTokenId.InKeyword, IsKeyword=true } },
             { "if", new HVMToken { Id = HVMTokenId.IfKeyword, IsKeyword=true } },
@@ -152,6 +153,8 @@ namespace HVMCompiler
             _Index = 0;
             _Tokens = new List<HVMToken>();
         }
+
+        public string GetSource() { return _Source; }
 
         public List<HVMToken> GetTokens()
         {
@@ -173,6 +176,7 @@ namespace HVMCompiler
                     if (ContainsString(tokens.Key, _Index))
                     {
                         // Create the token with the id and stuff.
+
                         foundToken = new HVMToken();
                         foundToken.Value = tokens.Value.Value;
                         foundToken.Id = tokens.Value.Id;
@@ -234,13 +238,16 @@ namespace HVMCompiler
                 }
 
                 if (foundToken != null)
+                {
                     Console.WriteLine(foundToken.Id + " " + foundToken.Value);
+                    this._Tokens.Add(foundToken);
+                }
             }
 
             return _Tokens;
         }
 
-        public bool ContainsString(string characters, int offset)
+        private bool ContainsString(string characters, int offset)
         {
             if (offset+characters.Length <= _Source.Length)
                 if (_Source.Substring(offset, characters.Length).Equals(characters))
@@ -248,7 +255,7 @@ namespace HVMCompiler
             return false;
         }
 
-        public string GetString()
+        private string GetString()
         {
             StringBuilder builder = new StringBuilder();
 

@@ -79,7 +79,7 @@ namespace HVMCompiler
             
 		    struct MyStruct(
 			    a:string,
-			    b[]:int
+			    b:int[]
 		    )
 
 		    var p:int = 10;
@@ -118,11 +118,45 @@ namespace HVMCompiler
 
         static void Main(string[] args)
         {
-            string simpleProgram = @"func:int orange() () struct name(a[]:string) var p:test=0;";
-            string simple2Program = @"struct($p:int, index:int) for index(0 to p) (p+=4; p = p + 1; $ptr:int = address(p); )";
+            /*    
+                var r:$vec3;
+                $r.x = $a.x + $b.x;
+                $r.y = $a.y + $b.y;
+                $r.z = $a.z + $b.z;
+                return r;
+            */
+            
+            string simpleProgram =
+@"
+func:$int[] orange(a:int, b:$string[]) (
+)
+
+func:$int[] orange() (
+)
+
+func:$vec3 +(a:$vec3, b:$vec3) (
+)
+
+func nothing() (
+)
+
+struct name(a:string[])
+var p:test=0;";
+
+            string simple2Program = 
+@"
+struct($p:int, index:int)
+var p:int = 2;
+for index(0 to p) (
+    p+=4;
+    p = p + 1;
+    $ptr:int = address(p);
+)";
 
             Tokenizer tokenizer = new Tokenizer(simpleProgram);
             List<HVMToken> Tokens = tokenizer.GetTokens();
+
+            SyntaxTree tree = new SyntaxTree(Tokens, tokenizer.GetSource());
 
             /*
             HvmEmitter emitter = new HvmEmitter(32);
