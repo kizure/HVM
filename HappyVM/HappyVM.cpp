@@ -13,15 +13,10 @@
 #include "HArray.h"
 #include "HString.h"
 #include "HPointer.h"
-#include "assembler.h"
 #include "jit.h"
-#include "tokenizer.h"
-#include "ast.h"
 #include "vm_emitter.h"
 
 using namespace std;
-
-using namespace compiler;
 
 /*
 	Optimization techniques:
@@ -83,23 +78,6 @@ int main(int argc, _TCHAR* argv[])
 	//testJit();
 	//return 0;
 
-	// AST testing
-	cout << "Enter expression to be evaluated" << endl;
-	while (true) {
-		cout << "> ";
-		string input;
-		getline(cin, input);
-
-		Tokenizer* tokenizer = new Tokenizer();
-		tokenizer->tokenize(&input);
-		tokenizer->printTokenStream();
-		
-		delete tokenizer;
-
-		//AST* ast = new AST(tokenizer->getTokens());
-		//ast->buildAst();
-	}
-
 	//	TODO:
 	//		- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
 	//			A bug with pointers at the moment. Kinda understand the problem, don't really know how to fix it semi-easily.
@@ -120,6 +98,8 @@ int main(int argc, _TCHAR* argv[])
 	//	Bug:
 	//		- An issue with HPointer has appeared (As the pointer gets de-referenced it changes to the actual value. As each operation deletes the value, it results in a deleted pointer on the 'dataStack')
 	//			which try to get deleted again and doesn't work and crashes. (undefined-behaviour)
+	//			A possible way to fix this issue is to make it so when using a pointer on the LHS, don't push any value to the stack as it is modifying the reference not making
+	//			a 'new' one. This issue is kinda fixed, however not properly tested.
 	//
 	//	VM Limitations:
 	//		Fixed sized stack for both call stack and data stack. (cannot dynamically shrink and grow)
@@ -129,11 +109,11 @@ int main(int argc, _TCHAR* argv[])
 
 	VmEmitter* emitter = new VmEmitter(64);
 	
-	emitter->push(" is a number\n", 13);
+	/*emitter->push(" is a number\n", 13);
 	emitter->push(100);
 	emitter->ecall(0);
 	emitter->ecall(0);
-	emitter->end();
+	emitter->end();*/
 
 	// (2 + 4) * (5 * 2)
 	// 2 4 5 2	operands
@@ -152,29 +132,29 @@ int main(int argc, _TCHAR* argv[])
 	emitter->jmp(label_start);
 	emitter->end();*/
 	
-	/*
+	
 	char* potato = (char*)malloc(sizeof(char)*6);
 	memcpy(potato, "potato", 6);
 	
 	char* isnice = (char*)malloc(sizeof(char)*8);
 	memcpy(isnice, " is nice", 8);
 	
-	char* ontoast = (char*)malloc(sizeof(char)*9);
-	memcpy(ontoast, " on toast", 9);
+	char* ontoast = (char*)malloc(sizeof(char)*10);
+	memcpy(ontoast, " on toast\n", 10);
 
-	emitter->push(potato, 6);
-	emitter->push(isnice, 8);
-	emitter->push(ontoast, 9);
+	emitter->push(potato, 6);		// 0
+	emitter->push(isnice, 8);		// 1
+	emitter->push(ontoast, 10);		// 2
 	emitter->pushPtr(0);
+	emitter->pushPtr(1);
 	emitter->pushPtr(1);
 	emitter->pushPtr(2);
 	emitter->add();
-	emitter->breakpoint();
 	emitter->add();
 	emitter->pop();
 	emitter->pop();
-	emitter->pop();
-	emitter->end();*/
+	emitter->ecall(0); // show thing.
+	emitter->end();
 
 	HappyVM* testVm = new HappyVM(emitter->complete());
 	

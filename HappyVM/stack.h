@@ -36,6 +36,10 @@ public:
 		return this->pos;
 	}
 
+	int getPos() {
+		return this->pos;
+	}
+
 	Stack(int size) {
 		this->pos = 0;
 		this->size = size;

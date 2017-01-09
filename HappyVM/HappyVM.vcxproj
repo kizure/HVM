@@ -131,7 +131,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ast.h" />
     <ClInclude Include="HArray.h" />
     <ClInclude Include="HFloat.h" />
     <ClInclude Include="HInt.h" />
@@ -139,11 +138,9 @@
     <ClInclude Include="HPointer.h" />
     <ClInclude Include="HString.h" />
     <ClInclude Include="jit.h" />
-    <ClInclude Include="operator.h" />
     <ClInclude Include="stack.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="tokenizer.h" />
     <ClInclude Include="vm.h" />
     <ClInclude Include="vm_emitter.h" />
     <ClInclude Include="x64emitter.h" />

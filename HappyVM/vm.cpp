@@ -78,14 +78,20 @@ void HappyVM::execute() {
 	case HOP_SHR:
 	case HOP_SHL:
 		{
-			bool wasPointer = false;
-			HObject* b = this->popObjFromStack(&wasPointer);
-			HObject* a = this->popObjFromStack(nullptr); // Leave it on stack.
+			bool wasPointerB = false;
+			bool wasPointerA = false;
+			HObject* b = this->popObjFromStack(&wasPointerB);
+			HObject* a = this->popObjFromStack(&wasPointerA); // Leave it on stack.
 			a->operation(b, (HInstruction)data);
-			this->dataStack->push(a);
-			printf("Pointer? : %i\n", wasPointer);
-			if (!wasPointer)
-				delete b; // Cleanup as b no longer exists UNLESS it was a pointer.
+			if (!wasPointerA)
+				this->dataStack->push(a);
+			/*else // This is a theory implementation, so instead of pushing a C++ reference to the stack of the result, push a HVM pointer to the stack.
+				   // This is currently not possible due to not knowing the pointer value in this part of the program. Obviously this can be implemented.
+				this->dataStack->push(new HPointer(aPointerInt));
+			*/
+
+			if (!wasPointerB)
+				delete b;
 		}
 		break;
 	case HOP_NOT:
@@ -407,7 +413,7 @@ HObject* HappyVM::popObjFromStack(bool* pointer) {
 
 	// Check if it is a pointer, if so 
 	if (ObjectUtils::instanceof<HPointer>(obj)) {
-		if (pointer !=nullptr) // Was a pointer.
+		if (pointer != nullptr) // Was a pointer.
 			*pointer = true;
 		HPointer* pointer = dynamic_cast<HPointer*>(obj);
 		int offset = *static_cast<int*>(pointer->getValue());

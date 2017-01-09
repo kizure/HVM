@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\compiler">
-      <UniqueIdentifier>{06ce519f-eb6a-457d-a12b-19e3c02f8ce0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\compiler\operators">
-      <UniqueIdentifier>{11852798-3d70-49c7-9724-c19edaca3b4d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -53,15 +47,6 @@
     </ClInclude>
     <ClInclude Include="x64emitter.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tokenizer.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="ast.h">
-      <Filter>Header Files\compiler</Filter>
-    </ClInclude>
-    <ClInclude Include="operator.h">
-      <Filter>Header Files\compiler\operators</Filter>
     </ClInclude>
     <ClInclude Include="HPointer.h">
       <Filter>Header Files</Filter>
