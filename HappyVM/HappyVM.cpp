@@ -79,10 +79,6 @@ int main(int argc, _TCHAR* argv[])
 	//return 0;
 
 	//	TODO:
-	//		- Test POINTER data type. (Now supports pointer -> pointer -> ... -> value but needs testing.)
-	//			A bug with pointers at the moment. Kinda understand the problem, don't really know how to fix it semi-easily.
-	//		- Test skipInstruction to make sure it works (This is aimed at arrays in particular.)
-	//		
 	//		- Basic Optimization - Use peek for TEST instruction instead of popping and then pushing back onto the stack.
 	//		- Possible optimization - For skipping instructions. We have to look at the next instructions data and skip through it all. (especially if it is an array)
 	//			To solve this, could seperate the instruction and it's data and then add a fixed size pointer for that instruction (32 bit integer) which references the data.
@@ -147,13 +143,13 @@ int main(int argc, _TCHAR* argv[])
 	emitter->push(ontoast, 10);		// 2
 	emitter->pushPtr(0);
 	emitter->pushPtr(1);
-	emitter->pushPtr(1);
 	emitter->pushPtr(2);
-	emitter->add();
-	emitter->add();
-	emitter->pop();
-	emitter->pop();
-	emitter->ecall(0); // show thing.
+	emitter->add(); // adds 1+2 and pushes 1 back onto stack
+	emitter->add(); // adds 0+1 and pushes 0 back onto stack.
+	emitter->pop(); // removes 0 pointer
+	emitter->pop(); // removes ontoast string
+	emitter->pop(); // removes isnice string
+	emitter->ecall(0); // print text as result is in potato string, this also pops potato off the stack.
 	emitter->end();
 
 	HappyVM* testVm = new HappyVM(emitter->complete());

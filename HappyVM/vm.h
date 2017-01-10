@@ -66,7 +66,7 @@ public:
 private:
 	void execute();
 	void pushObject();
-	HObject* popObjFromStack(bool* pointer);
+	HObject* popObjFromStack(bool* pointer, int* pointerAddress);
 	HObject* getArray();
 	HObject* recursivePointers(HObject* o);
 	int getInt();

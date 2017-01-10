@@ -32,14 +32,20 @@ HappyVM::HappyVM(char* data) {
 	this->ops = 0;
 }
 
+#define EXTERN_PRINT 0
+#define EXTERN_SIN 1
+#define EXTERN_COS 2
+#define EXTERN_TAN 3
+#define EXTERN_SQRT 4
+
 void HappyVM::initEMethods() {
 	this->methods = (emethod*)malloc(sizeof(emethod)*1024); // Up to 1024 external methods for now.
 
-	methods[0] = &HappyVM::vmPrint;
-	methods[1] = &HappyVM::vmSin;
-	methods[2] = &HappyVM::vmCos;
-	methods[3] = &HappyVM::vmTan;
-	methods[4] = &HappyVM::vmSqrt;
+	methods[EXTERN_PRINT] = &HappyVM::vmPrint;
+	methods[EXTERN_SIN] = &HappyVM::vmSin;
+	methods[EXTERN_COS] = &HappyVM::vmCos;
+	methods[EXTERN_TAN] = &HappyVM::vmTan;
+	methods[EXTERN_SQRT] = &HappyVM::vmSqrt;
 }
 
 void HappyVM::run(void) {
@@ -50,7 +56,7 @@ void HappyVM::run(void) {
 }
 
 void HappyVM::execute() {
-#if 0
+#if 1
 	ops++;
 	if (ops % 1000 == 0) { // Only check every thousand ticks or so.
 		const long double now = time(0)*1000;
@@ -80,25 +86,29 @@ void HappyVM::execute() {
 		{
 			bool wasPointerB = false;
 			bool wasPointerA = false;
-			HObject* b = this->popObjFromStack(&wasPointerB);
-			HObject* a = this->popObjFromStack(&wasPointerA); // Leave it on stack.
+			int aPointer = 0;
+			HObject* b = this->popObjFromStack(&wasPointerB, nullptr);
+			HObject* a = this->popObjFromStack(&wasPointerA, &aPointer); // Leave it on stack.
 			a->operation(b, (HInstruction)data);
 			if (!wasPointerA)
 				this->dataStack->push(a);
-			/*else // This is a theory implementation, so instead of pushing a C++ reference to the stack of the result, push a HVM pointer to the stack.
-				   // This is currently not possible due to not knowing the pointer value in this part of the program. Obviously this can be implemented.
-				this->dataStack->push(new HPointer(aPointerInt));
-			*/
-
+			else // So instead of pushing a C++ reference to the stack of the result, push a HVM pointer to the stack.
+				this->dataStack->push(new HPointer(aPointer));
+			
 			if (!wasPointerB)
 				delete b;
 		}
 		break;
 	case HOP_NOT:
 		{
-			HObject* a = this->popObjFromStack(nullptr);
+			bool wasPointer=false;
+			int pointer=0;
+			HObject* a = this->popObjFromStack(&wasPointer, &pointer);
 			a->operation(nullptr, HOP_NOT);
-			this->dataStack->push(a);
+			if (wasPointer)
+				this->dataStack->push(new HPointer(pointer));
+			else
+				this->dataStack->push(a);
 		}
 		break;
 	case HOP_PUSH:
@@ -136,14 +146,26 @@ void HappyVM::execute() {
 		}
 	case HOP_TEST:
 		{
+			int aPointer=0;
+			int bPointer=0;
+			bool aIsPointer=false;
+			bool bIsPointer=false;
+
 			char cmp = this->prog[this->ip++];
-			HObject* b = this->popObjFromStack(nullptr);
-			HObject* a = this->popObjFromStack(nullptr);
+			HObject* b = this->popObjFromStack(&bIsPointer, &bPointer);
+			HObject* a = this->popObjFromStack(&aIsPointer, &aPointer);
 			int result = a->cmp(b);
 
-			this->dataStack->push(a);
-			this->dataStack->push(b);
+			if (aIsPointer)
+				this->dataStack->push(new HPointer(aPointer));
+			else
+				this->dataStack->push(a);
 
+			if (bIsPointer)
+				this->dataStack->push(new HPointer(bPointer));
+			else
+				this->dataStack->push(b);
+			
 			// a != b then break, this is a special one for integers / floats. 10 > 2 and isn't equal to it either.
 			if (cmp == HOP_CONDITION_NOT_EQUAL && 
 				(result == HOP_CONDITION_LESS || result == HOP_CONDITION_GREATER || result == HOP_CONDITION_NOT_EQUAL))
@@ -163,8 +185,8 @@ void HappyVM::execute() {
 
 			bool wasPointer = false;
 
-			HObject* ary = this->popObjFromStack(nullptr);
-			HObject* index = this->popObjFromStack(&wasPointer);
+			HObject* ary = this->popObjFromStack(nullptr, nullptr);
+			HObject* index = this->popObjFromStack(&wasPointer, nullptr);
 
 			if (ObjectUtils::instanceof<HInt>(index) && ObjectUtils::instanceof<HArray>(ary)) {
 				HInt* idx = dynamic_cast<HInt*>(index);
@@ -187,9 +209,9 @@ void HappyVM::execute() {
 			
 			bool wasPointer = false;
 
-			HObject* ary = this->popObjFromStack(nullptr);
-			HObject* item = this->popObjFromStack(nullptr);
-			HObject* index = this->popObjFromStack(&wasPointer);
+			HObject* ary = this->popObjFromStack(nullptr, nullptr);
+			HObject* item = this->popObjFromStack(nullptr, nullptr);
+			HObject* index = this->popObjFromStack(&wasPointer, nullptr);
 
 			if (ObjectUtils::instanceof<HInt>(index) && ObjectUtils::instanceof<HArray>(ary)) {
 				HInt* idx = dynamic_cast<HInt*>(index);
@@ -229,7 +251,7 @@ void HappyVM::execute() {
 
 void HappyVM::vmPrint() {
 	bool ptr = false;
-	HObject* obj = this->popObjFromStack(&ptr);
+	HObject* obj = this->popObjFromStack(&ptr, nullptr);
 
 	if (ObjectUtils::instanceof<HInt>(obj)){
 		HInt* var = dynamic_cast<HInt*>(obj);
@@ -252,7 +274,7 @@ void HappyVM::vmPrint() {
 // EXTERNAL FUNCTIONS //
 void HappyVM::vmCos() {
 	bool ptr = false;
-	HObject* obj = this->popObjFromStack(&ptr);
+	HObject* obj = this->popObjFromStack(&ptr, nullptr);
 
 	float val = 0;
 
@@ -275,7 +297,7 @@ void HappyVM::vmCos() {
 
 void HappyVM::vmSin() {
 	bool ptr = false;
-	HObject* obj = this->popObjFromStack(&ptr);
+	HObject* obj = this->popObjFromStack(&ptr, nullptr);
 
 	float val = 0;
 
@@ -298,7 +320,7 @@ void HappyVM::vmSin() {
 
 void HappyVM::vmTan() {
 	bool ptr = false;
-	HObject* obj = this->popObjFromStack(&ptr);
+	HObject* obj = this->popObjFromStack(&ptr, nullptr);
 
 	float val = 0;
 
@@ -321,7 +343,7 @@ void HappyVM::vmTan() {
 
 void HappyVM::vmSqrt() {
 	bool ptr = false;
-	HObject* obj = this->popObjFromStack(&ptr);
+	HObject* obj = this->popObjFromStack(&ptr, nullptr);
 
 	float val = 0;
 
@@ -408,17 +430,19 @@ inline int HappyVM::getUShort() {
 	return uLen << 8 | lLen;
 }
 
-HObject* HappyVM::popObjFromStack(bool* pointer) {
+HObject* HappyVM::popObjFromStack(bool* isPtr, int* pointerAddress) {
 	HObject* obj = this->dataStack->pop();
 
 	// Check if it is a pointer, if so 
 	if (ObjectUtils::instanceof<HPointer>(obj)) {
-		if (pointer != nullptr) // Was a pointer.
-			*pointer = true;
 		HPointer* pointer = dynamic_cast<HPointer*>(obj);
-		int offset = *static_cast<int*>(pointer->getValue());
-		printf("Pointer Offset: %i\n", offset);
-		obj = this->recursivePointers(this->dataStack->lookat(offset));
+		int address = *static_cast<int*>(pointer->getValue());
+		if (pointerAddress!=nullptr)
+			*pointerAddress = address;
+		if (isPtr != nullptr) // Was a pointer.
+			*isPtr = true;
+		// printf("Pointer Address: %i\n", offset);
+		obj = this->recursivePointers(this->dataStack->lookat(address));
 		delete pointer;
 	}
 
